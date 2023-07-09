@@ -31,121 +31,143 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: 'Gender can not be empty',
     },
-    sessionIDs: [{ session: { type: Schema.Types.ObjectId, ref: 'Session' }, attended: Boolean }],
-    issueIDs: [{ issue: { type: Schema.Types.ObjectId, ref: 'Issue' }, resolved: Boolean }],
+    sessions: [{
+        session: {
+            sessionID: {
+                type: Number,
+                required: 'Session ID can not be empty',
+                unique: true
+            },
+            sessionLocation: {
+                type: String,
+                required: 'Location can not be empty',
+            },
+            sessionLocation2: {
+                type: String,
+                required: 'Location can not be empty',
+            },
+            sessionDate: {
+                type: Date,
+                required: 'Date can not be empty',
+            },
+            startTime: {
+                type: Date,
+                required: 'Can not be empty',
+            },
+            endTime: {
+                type: Date,
+                required: 'Can not be empty',
+            },
+        },
+        attended: {
+            type: Boolean,
+            default: false
+        }
+    }],
+    issues: [{
+        issue: {
+            badgeID: {
+                type: Number,
+                ref: 'User',
+                required: 'Badge ID can not be empty',
+            },
+            issueID: {
+                type: Number,
+                required: 'ID cannot be empty',
+
+            },
+            issueText: {
+                type: String,
+                required: 'Issue can not be empty',
+            },
+            raised: {
+                type: Date,
+                required: 'Enter raised date',
+
+            },
+            resolved: Date
+
+        },
+        pertaining: Boolean
+    }],
     reportsTo: Number,
 
 
 });
 
-const sessionSchema = new mongoose.Schema({
-    sessionID: {
-        type: Number,
-        required: 'Session ID can not be empty',
-        unique: true
-    },
-    sessionLocation: {
-        type: String,
-        required: 'Location can not be empty',
-    },
-    sessionLocation2: {
-        type: String,
-        required: 'Location can not be empty',
-    },
-    sessionDate: {
-        type: Date,
-        required: 'Date can not be empty',
-    },
-    startTime: {
-        type: Date,
-        required: 'Can not be empty',
-    },
-    endTime: {
-        type: Date,
-        required: 'Can not be empty',
-    },
-
-
-});
-
-const issueSchema = new mongoose.Schema({
-    badgeID: {
-        type: Number,
-        ref: 'User',
-        required: 'Badge ID can not be empty',
-    },
-    issueID: {
-        type: Number,
-        required: 'ID cannot be empty',
-
-    },
-    issueText: {
-        type: String,
-        required: 'Issue can not be empty',
-    },
-    raised: {
-        type: Date,
-        required: 'Enter raised date',
-
-    },
-    resolved: Date
-
-});
-
 const User = mongoose.model("User", userSchema);
-const Session = mongoose.model("Session", sessionSchema);
-const Issue = mongoose.model("Issue", issueSchema);
 
 
-const session1 = new Session({
+
+
+const session1 = {
     sessionID: 1,
     sessionLocation: "St. Stephens",
     sessionLocation2: "North Campus",
     sessionDate: new Date("2016-05-18T16:00:00Z"),
     startTime: new Date("2016-05-18T17:00:00Z"),
     endTime: new Date("2016-05-18T18:00:00Z"),
-});
-const session2 = new Session({
+};
+const session2 = {
     sessionID: 2,
     sessionLocation: "Hindu College",
     sessionLocation2: "North Campus",
     sessionDate: new Date("2016-05-19T16:00:00Z"),
     startTime: new Date("2016-05-19T17:00:00Z"),
     endTime: new Date("2016-05-19T18:00:00Z"),
-});
-const session3 = new Session({
+};
+const session3 = {
     sessionID: 3,
     sessionLocation: "SRCC",
     sessionLocation2: "North Campus",
     sessionDate: new Date("2016-05-18T16:00:00Z"),
     startTime: new Date("2016-05-18T17:00:00Z"),
     endTime: new Date("2016-05-18T18:00:00Z"),
-});
-const session4 = new Session({
+};
+const session4 = {
     sessionID: 4,
     sessionLocation: "Ramjas College",
     sessionLocation2: "North Campus",
     sessionDate: new Date("2016-05-18T16:00:00Z"),
     startTime: new Date("2016-05-18T17:00:00Z"),
     endTime: new Date("2016-05-18T18:00:00Z"),
-});
-const session5 = new Session({
+};
+const session5 = {
     sessionID: 5,
     sessionLocation: "LSR",
     sessionLocation2: "South Campus",
     sessionDate: new Date("2016-05-18T16:00:00Z"),
     startTime: new Date("2016-05-18T17:00:00Z"),
     endTime: new Date("2016-05-18T18:00:00Z"),
-});
+};
 
-Session.insertMany([session1, session2, session3, session4, session5]);
-const session1Id = session1._id;
-const session2Id = session2._id;
-const session3Id = session3._id;
-const session4Id = session4._id;
-const session5Id = session5._id;
+// Session.insertMany([session1, session2, session3, session4, session5]);
+// const session1Id = session1._id;
+// const session2Id = session2._id;
+// const session3Id = session3._id;
+// const session4Id = session4._id;
+// const session5Id = session5._id;
 
 // Create instances of User with updated sessionIDs
+
+const issue1 = {
+    badgeID: 10000,
+    issueID: 1,
+    issueText: "Issues regarding performance of app",
+    raised: new Date("2016-05-18T16:00:00Z"),
+};
+const issue2 = {
+    badgeID: 10000,
+    issueID: 2,
+    issueText: "Issues regarding UI",
+    raised: new Date("2016-05-18T16:00:00Z"),
+};
+const issue3 = {
+    badgeID: 10001,
+    issueID: 3,
+    issueText: "Issues regarding response time",
+    raised: new Date("2016-05-18T16:00:00Z"),
+};
 const IG = new User({
     badgeID: 10000,
     firstName: "Anil",
@@ -154,11 +176,15 @@ const IG = new User({
     profilePic: "url",
     location: "New Delhi",
     gender: "Male",
-    sessionIDs: [
-        { session: session1Id, attended: true },
-        { session: session2Id, attended: true },
+    sessions: [
+        { session: session1, attended: true },
+        { session: session2, attended: true },
     ],
-    // issueIDs: [{ issue: issue1Id, resolved: false }, { issue: issue2Id, resolved: false }],
+    issues: [
+            { issue: issue1, pertaining: false },
+            { issue: issue2, pertaining: true }
+        ]
+        // issueIDs: [{ issue: issue1Id, resolved: false }, { issue: issue2Id, resolved: false }],
 });
 IG.save();
 
@@ -170,9 +196,12 @@ const police1 = new User({
     profilePic: "url",
     location: "New Delhi",
     gender: "Male",
-    sessionIDs: [
-        { session: session2Id, attended: true },
-        { session: session3Id, attended: true },
+    sessions: [
+        { session: session2, attended: true },
+        { session: session3, attended: true },
+    ],
+    issues: [
+        { issue: issue3, pertaining: false },
     ],
     reportsTo: 10000,
 });
@@ -186,9 +215,9 @@ const police2 = new User({
     profilePic: "url",
     location: "New Delhi",
     gender: "Male",
-    sessionIDs: [
-        { session: session3Id, attended: true },
-        { session: session4Id, attended: true },
+    sessions: [
+        { session: session3, attended: true },
+        { session: session4, attended: true },
     ],
     reportsTo: 10000,
 });
@@ -202,9 +231,9 @@ const police3 = new User({
     profilePic: "url",
     location: "New Delhi",
     gender: "Male",
-    sessionIDs: [
-        { session: session1Id, attended: true },
-        { session: session5Id, attended: true },
+    sessions: [
+        { session: session1, attended: true },
+        { session: session5, attended: true },
     ],
     reportsTo: 10002,
 });
@@ -217,9 +246,9 @@ const police4 = new User({
     profilePic: "url",
     location: "New Delhi",
     gender: "Male",
-    sessionIDs: [
-        { session: session2Id, attended: true },
-        { session: session3Id, attended: true },
+    sessions: [
+        { session: session2, attended: true },
+        { session: session3, attended: true },
     ],
     reportsTo: 10001
 });
@@ -231,9 +260,9 @@ const police5 = new User({
     profilePic: "url",
     location: "New Delhi",
     gender: "Male",
-    sessionIDs: [
-        { session: session3Id, attended: true },
-        { session: session4Id, attended: true },
+    sessions: [
+        { session: session3, attended: true },
+        { session: session4, attended: true },
     ],
     reportsTo: 10001
 });
@@ -245,9 +274,9 @@ const police6 = new User({
     profilePic: "url",
     location: "New Delhi",
     gender: "Male",
-    sessionIDs: [
-        { session: session4Id, attended: true },
-        { session: session5Id, attended: true },
+    sessions: [
+        { session: session4, attended: true },
+        { session: session5, attended: true },
     ],
     reportsTo: 10002
 });
@@ -259,9 +288,9 @@ const police7 = new User({
     profilePic: "url",
     location: "New Delhi",
     gender: "Male",
-    sessionIDs: [
-        { session: session1Id, attended: true },
-        { session: session5Id, attended: true },
+    sessions: [
+        { session: session1, attended: true },
+        { session: session5, attended: true },
     ],
     reportsTo: 10006
 });
@@ -273,9 +302,9 @@ const police8 = new User({
     profilePic: "url",
     location: "New Delhi",
     gender: "Male",
-    sessionIDs: [
-        { session: session3Id, attended: true },
-        { session: session5Id, attended: true },
+    sessions: [
+        { session: session3, attended: true },
+        { session: session5, attended: true },
     ],
     reportsTo: 10005
 });
@@ -287,9 +316,9 @@ const police9 = new User({
     profilePic: "url",
     location: "New Delhi",
     gender: "Male",
-    sessionIDs: [
-        { session: session2Id, attended: true },
-        { session: session1Id, attended: true },
+    sessions: [
+        { session: session2, attended: true },
+        { session: session1, attended: true },
     ],
     reportsTo: 10004
 });
@@ -301,9 +330,9 @@ const police10 = new User({
     profilePic: "url",
     location: "New Delhi",
     gender: "Male",
-    sessionIDs: [
-        { session: session3Id, attended: true },
-        { session: session4Id, attended: true },
+    sessions: [
+        { session: session3, attended: true },
+        { session: session4, attended: true },
     ],
     reportsTo: 10004
 });
@@ -315,9 +344,9 @@ const police11 = new User({
     profilePic: "url",
     location: "New Delhi",
     gender: "Male",
-    sessionIDs: [
-        { session: session2Id, attended: true },
-        { session: session3Id, attended: true },
+    sessions: [
+        { session: session2, attended: true },
+        { session: session3, attended: true },
     ],
     reportsTo: 10009
 });
@@ -329,9 +358,9 @@ const police12 = new User({
     profilePic: "url",
     location: "New Delhi",
     gender: "Male",
-    sessionIDs: [
-        { session: session1Id, attended: true },
-        { session: session3Id, attended: true },
+    sessions: [
+        { session: session1, attended: true },
+        { session: session3, attended: true },
     ],
     reportsTo: 10009
 });
@@ -343,9 +372,9 @@ const police13 = new User({
     profilePic: "url",
     location: "New Delhi",
     gender: "Male",
-    sessionIDs: [
-        { session: session1Id, attended: true },
-        { session: session4Id, attended: true },
+    sessions: [
+        { session: session1, attended: true },
+        { session: session4, attended: true },
     ],
     reportsTo: 10010
 });
@@ -357,30 +386,10 @@ const police14 = new User({
     profilePic: "url",
     location: "New Delhi",
     gender: "Male",
-    sessionIDs: [
-        { session: session2Id, attended: true },
-        { session: session3Id, attended: true },
+    sessions: [
+        { session: session2, attended: true },
+        { session: session3, attended: true },
     ],
     reportsTo: 10010
 });
 User.insertMany([police1, police2, police3, police4, police5, police6, police7, police8, police9, police10, police11, police12, police13, police14]);
-
-const issue1 = new Issue({
-    badgeID: 10000,
-    issueID: 1,
-    issueText: "Issues regarding performance of app",
-    raised: new Date("2016-05-18T16:00:00Z"),
-});
-const issue2 = new Issue({
-    badgeID: 10000,
-    issueID: 2,
-    issueText: "Issues regarding UI",
-    raised: new Date("2016-05-18T16:00:00Z"),
-});
-const issue3 = new Issue({
-    badgeID: 10001,
-    issueID: 3,
-    issueText: "Issues regarding response time",
-    raised: new Date("2016-05-18T16:00:00Z"),
-});
-Issue.insertMany([issue1, issue2, issue3]);
