@@ -9,8 +9,7 @@ const formatTime = (time) => {
   });
 };
 
-
-exports.createIssueInCurrentSession = async (req, res) => {
+exports.createIssue = async (req, res) => {
   try {
     const badgeID = parseInt(req.params.badgeID);
 
@@ -24,19 +23,14 @@ exports.createIssueInCurrentSession = async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    const currentDate = new Date().toISOString().split('T')[0];
+    // Generate the issueID
+    const lastIssue = user.issues[user.issues.length - 1];
+    const issueID = lastIssue ? lastIssue.issue.issueID + 1 : 1;
 
-    const currentSession = user.sessions.find(({ session }) => {
-      const sessionDate = session.sessionDate.toISOString().split('T')[0];
-      return sessionDate === currentDate;
-    });
+    // Extract the relevant data from the request body
+    const { issueText } = req.body;
 
-    if (!currentSession) {
-      return res.status(404).json({ error: 'No current session found' });
-    }
-
-    const { issueID, issueText } = req.body;
-  
+    // Create a new issue object
     const issue = {
       issue: {
         badgeID: user.badgeID,
@@ -47,8 +41,8 @@ exports.createIssueInCurrentSession = async (req, res) => {
       },
       pertaining: true,
     };
-  
-    currentSession.issues.push(issue);
+    user.issues.push(issue);
+
     await user.save();
 
     res.json(issue);
@@ -57,6 +51,7 @@ exports.createIssueInCurrentSession = async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 };
+
 
 exports.getCurrentSession = async (req, res) => {
   try {
