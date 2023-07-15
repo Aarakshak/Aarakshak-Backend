@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <link rel="stylesheet" href="./tempstyles.css"> -->
+    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous" /> -->
+</head>
+
+<body>
+    <div class="userDetails" style="text-align: center;">
+        <img src="https://truthultimate.com/wp-content/uploads/2021/09/Satyamev-Jayate-Logo.png" style="width:10%;height:15%;" alt="">
+        <br>
+        <h1>Officer details</h1>
+    </div>
+    <h2>Officer# {{badgeID}}</h2>
+    <h2>Name: {{surname}}, {{firstName}}</h2>
+    <h2>Rank: {{rank}}</h2>
+    <h2>Location of service: {{location}}</h2>
+    <h2>Gender: {{gender}}</h2>
+    <div style="text-align: center;">
+        <h1>Sessions</h1>
+    </div>
+    {{#if sessions}}
+    <div>
+        {{#each sessions}}
+        <h4>Session ID: {{this.session.sessionID}}</h4>
+        <p>Session Date: {{formatDate this.session.sessionDate}}</p>
+        <p>Start Time: {{formatTime this.session.startTime}}</p>
+        <p>End Time: {{formatTime this.session.endTime}}</p>
+        {{/each}}
+    </div>
+    {{/if}} {{/each}}
+
+    <script>
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toDateString();
+        }
+
+        function formatTime(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+    </script>
+</body>
+
+</html>
+
+<!-- badgeID: user.badgeID,
+                firstName: user.firstName,
+                surname: user.surname,
+                rank: user.rank,
+                pic: user.profilePic,
+                location: user.location,
+                gender: user.gender,
+                sessions: user.sessions,
+                attended: user.attended,
+                issues: user.issues,
+                reportsTo: user.reportsTo, -->
