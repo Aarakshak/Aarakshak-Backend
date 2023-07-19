@@ -1,4 +1,4 @@
-const User = require("../schema");
+const User = require("../models/schema");
 
 exports.getProfileOfUserByBadgeID = async (req, res) => {
     try{

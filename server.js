@@ -1,4 +1,9 @@
 const express = require('express');
+const mongoose = require('mongoose');
+
+const User = require('./models/schema');
+const Session = require('./models/session');
+
 
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
@@ -21,6 +26,18 @@ app.use('/v1/profile', profileRoutes);
 app.use(notFoundMiddleware)
 
 const port = 3000;
-app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
-});
+const URL = 'mongodb+srv://chinmay:12345@cluster0.uiodoqm.mongodb.net/cluster0?retryWrites=true&w=majority'
+mongoose.connect(URL, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+  .then(() => {
+    console.log('Connected to MongoDB');
+    // Start the server once connected to the database
+    app.listen(3000, () => {
+      console.log(`Server started on port: ${port}`);
+    });
+  })
+  .catch((error) => {
+    console.error('MongoDB connection error:', error);
+  });

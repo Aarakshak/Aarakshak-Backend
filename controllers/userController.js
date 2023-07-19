@@ -1,5 +1,5 @@
-const User = require('../schema');
-
+const User = require('../models/schema');
+const Session = require('../models/session')
 
 const formatTime = (time) => {
   return new Date(time).toLocaleTimeString([], {
