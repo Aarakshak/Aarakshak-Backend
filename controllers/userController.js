@@ -61,7 +61,10 @@ exports.getCurrentSession = async (req, res) => {
       return res.status(400).json({ error: 'Invalid badge ID' });
     }
 
-    const user = await User.findOne({ badgeID });
+    const user = await User.findOne({ badgeID }).populate({
+      path: 'sessions.session',
+      model: 'Session',
+    });
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
@@ -70,8 +73,7 @@ exports.getCurrentSession = async (req, res) => {
     const currentDate = new Date().toISOString().split('T')[0];
 
     const currentSession = user.sessions.find(({ session }) => {
-      const sessionDate = session.sessionDate.toISOString().split('T')[0];
-      return sessionDate === currentDate;
+      return session.sessionDate.toISOString().split('T')[0] === currentDate;
     });
 
     if (!currentSession) {
@@ -97,6 +99,7 @@ exports.getCurrentSession = async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 };
+
 
 exports.getUserByBadgeID = async (req, res) => {
   try {
