@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
-const Session = require('./session'); // Import the Session model
+const validator =  require('validator')
 
 const userSchema = new Schema({
   badgeID: {
@@ -47,7 +47,12 @@ const userSchema = new Schema({
   },
   emailId: {
     type: String,
-    required: 'EmailId cannot be empty'
+    required: 'EmailId cannot be empty',
+    // validate: {
+    //   validator: validator.isEmail,
+    //   message: 'Please provide a valid email'
+    // },
+    unique: true,
   },
   gender: {
     type: String,

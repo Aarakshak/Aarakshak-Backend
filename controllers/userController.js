@@ -9,6 +9,22 @@ const formatTime = (time) => {
   });
 };
 
+exports.loginUser = async (req, res) => {
+  try {
+    const { emailId, password } = req.body;
+    const user = await User.findOne({ emailId, password });
+
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    res.json({ message: 'Login successful',  badgeID: user.badgeID });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
 exports.createIssue = async (req, res) => {
   try {
     const badgeID = parseInt(req.params.badgeID);
@@ -22,15 +38,13 @@ exports.createIssue = async (req, res) => {
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
-
-    // Generate the issueID
+    
     const lastIssue = user.issues[user.issues.length - 1];
     const issueID = lastIssue ? lastIssue.issue.issueID + 1 : 1;
 
-    // Extract the relevant data from the request body
+
     const { issueText } = req.body;
 
-    // Create a new issue object
     const issue = {
       issue: {
         badgeID: user.badgeID,

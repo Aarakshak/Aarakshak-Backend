@@ -1,10 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
 
-const User = require('./models/schema');
-const Session = require('./models/session');
-
-
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const notFoundMiddleware = require('./middleware/not-found');
