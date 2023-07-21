@@ -1,5 +1,8 @@
 const User = require('../models/schema');
 const Session = require('../models/session')
+const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+const secretKey = crypto.randomBytes(64).toString('hex');
 
 const formatTime = (time) => {
   return new Date(time).toLocaleTimeString([], {
@@ -18,8 +21,25 @@ exports.loginUser = async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    res.json({ message: 'Login successful',  badgeID: user.badgeID });
-  } catch (error) {
+    if (password !== user.password) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    // If the password is valid, generate a JWT token
+    const token = jwt.sign(
+      { emailId: user.emailId, badgeID: user.badgeID }, // Include badgeID in the payload
+      secretKey,
+      {
+        expiresIn: '1h', // Set the expiration time for the token
+      }
+    );
+
+    user.jwtToken = token;
+    await user.save();
+
+    // Return the token and badgeID to the client
+    res.json({ token, badgeID: user.badgeID });
+  }catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
   }
