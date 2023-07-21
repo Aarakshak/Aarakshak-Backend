@@ -4,8 +4,10 @@
 
 
 
-
+// const URL = 'mongodb+srv://chinmay:12345@cluster0.uiodoqm.mongodb.net/cluster0?retryWrites=true&w=majority'
+// mongoose.connect(URL, {
 //   useNewUrlParser: true,
+//   useUnifiedTopology: true,
 // })
 //   .then(() => {
 //     console.log('Connected to MongoDB');
@@ -22,7 +24,7 @@
 //     // Create new User instances
 //     const users = [
 //       {
-//         badgeID: 12345,
+//         badgeID: 34567,
 //         firstName: 'John',
 //         surname: 'Doe',
 //         password: '12345',
@@ -33,44 +35,25 @@
 //         sub_division: 'Subdivision A',
 //         police_station: 123,
 //         phoneNo: '8954502462',
-//         emailId: 'chinmayagarwal4@example.com',
+//         emailId: 'chinmayagarwal4@gmail.com',
 //         gender: 'Male',
 //         sessions: [],
 //         issues: [],
 //         sos: [],
 //       },
-//       {
-//         badgeID: 23456,
-//         firstName: 'Jane',
-//         surname: 'Smith',
-//         password: '12345',
-//         rank: 'Officer',
-//         profilePic: 'profile.jpg',
-//         location: 'London',
-//         zone: 'Zone 2',
-//         sub_division: 'Subdivision B',
-//         police_station: 456,
-//         phoneNo: '9876543210',
-//         emailId: 'jane@example.com',
-//         gender: 'Female',
-//         sessions: [],
-//         issues: [],
-//         sos: [],
-//         reportsTo: 12345,
-//       },
-//       // Add more users as needed
+  
 //     ];
 
 //     // Save the User instances to the database
 //     const savedUsers = await User.insertMany(users);
 //     console.log('Users saved:', savedUsers);
-//     insertSessions(savedUsers);
+//     // insertSessions(savedUsers);
 //   } catch (error) {
 //     console.error('Error saving users:', error);
 //   }
 // }
 
-// // Insert sessions separately
+// Insert sessions separately
 // const insertSessions = async (users) => {
 //   try {
 //     // Create new Session instances

@@ -1,8 +1,12 @@
 const User = require('../models/schema');
 const Session = require('../models/session')
+
+
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const secretKey = crypto.randomBytes(64).toString('hex');
+
+const nodemailer = require('nodemailer');
 
 const formatTime = (time) => {
   return new Date(time).toLocaleTimeString([], {
@@ -12,10 +16,47 @@ const formatTime = (time) => {
   });
 };
 
+function generateOTP() {
+ const digits = '0123456789';
+ let otp = '';
+ for(let i = 0; i<6; i++)
+ {
+  otp += digits[Math.floor(Math.random()*10)];
+ }
+ return otp;
+}
+
+async function sendOTPByEmail(email, otp)  {
+  
+  const transporter = nodemailer.createTransport({
+    host: "smtp.forwardemail.net",
+    port: 465,
+    secure: true,
+    auth: {
+      user: 'XXXXX',
+      pass: 'XXXXX'
+    },
+  });
+
+  const mailOptions = {
+    from : 'XXXXX',
+    to : email,
+    subject: 'OTP Verification',
+    text : `Your OTP is: ${otp}, `
+  };
+  try{
+    await transporter.sendMail(mailOptions);
+    console.log('OTP email sent successfully');
+  } catch(error) {
+    console.log('Error sending OTP email', error);
+  }
+}
+
+
 exports.loginUser = async (req, res) => {
   try {
-    const { emailId, password } = req.body;
-    const user = await User.findOne({ emailId, password });
+    const { emailId, password, otp } = req.body;
+    let user = await User.findOne({ emailId, password });
 
     if (!user) {
       return res.status(401).json({ error: 'Invalid credentials' });
@@ -25,7 +66,20 @@ exports.loginUser = async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    // If the password is valid, generate a JWT token
+    if(otp) {
+      if(user.otp !== otp || Date.now() > user.otpExpiration){
+        return res.status(401).json({ error: 'Invalid OTP' });
+      }
+      user.otp = undefined;
+      user.otpExpiration = undefined;
+    }else {
+      const newOTP = generateOTP();
+      user.otp = newOTP;
+      user.otpExpiration = Date.now() + 5 * 60 * 1000;
+
+      await sendOTPByEmail(emailId, newOTP);
+    }
+    user = await user.save();
     const token = jwt.sign(
       { emailId: user.emailId, badgeID: user.badgeID }, // Include badgeID in the payload
       secretKey,
@@ -36,6 +90,9 @@ exports.loginUser = async (req, res) => {
 
     user.jwtToken = token;
     await user.save();
+
+  
+
 
     // Return the token and badgeID to the client
     res.json({ token, badgeID: user.badgeID });

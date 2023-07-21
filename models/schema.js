@@ -101,6 +101,14 @@ const userSchema = new Schema({
       required: 'Cannot be empty',
     },
   }],
+  otp: {
+    type: String,
+    required: false, // You can set it to true if you want OTP to be always present for verification
+  },
+  otpExpiration: {
+    type: Date,
+    required: false,
+  },
   reportsTo: Number,
 });
 
