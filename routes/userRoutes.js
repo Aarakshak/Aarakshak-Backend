@@ -7,5 +7,7 @@ router.post('/verify-otp', userController.verifyOTP);
 router.get('/:badgeID', userController.getUserByBadgeID);
 router.get('/:badgeID/current-session', userController.getCurrentSession);
 router.post('/:badgeID/issues', userController.createIssue);
-
+router.get('/:badgeID/previous-sessions', userController.getPreviousSessionsAttendance);
+router.get('/:badgeID/upcoming-sessions', userController.getUpcomingSession)
+router.get('/:badgeID', userController.getProfileOfUserByBadgeID);
 module.exports = router;

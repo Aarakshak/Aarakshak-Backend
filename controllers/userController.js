@@ -1,6 +1,7 @@
 const User = require('../models/schema');
 const Session = require('../models/session')
-
+const dotenv = require('dotenv');
+dotenv.config()
 
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
@@ -31,13 +32,13 @@ async function sendOTPByEmail(email, otp)  {
   const transporter = nodemailer.createTransport({
     service :'gmail',
     auth : {
-      user: 'cagarwal_be20@thapar.edu',
-      pass: 'ekeyrdwzoxybcsnx'
+      user: process.env.email,
+      pass: process.env.pass
     }
 });
 
   const mailOptions = {
-    from : 'cagarwal_be20@thapar.edu',
+    from : process.env.email,
     to : email,
     subject: 'OTP Verification',
     text : `Your OTP is: ${otp}`
@@ -103,7 +104,7 @@ exports.verifyOTP = async (req, res) => {
       { emailId: user.emailId, badgeID: user.badgeID }, // Include badgeID in the payload
       secretKey,
       {
-        expiresIn: '1h', // Set the expiration time for the token
+        expiresIn: '1d', // Set the expiration time for the token
       }
     );
     user.jwtToken = token;
@@ -116,7 +117,7 @@ exports.verifyOTP = async (req, res) => {
 }
 };
 
-exports.createIssue = async (req, res) => {
+exports.getUserByBadgeID = async (req, res) => {
   try {
     const badgeID = parseInt(req.params.badgeID);
 
@@ -129,28 +130,25 @@ exports.createIssue = async (req, res) => {
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
-    
-    const lastIssue = user.issues[user.issues.length - 1];
-    const issueID = lastIssue ? lastIssue.issue.issueID + 1 : 1;
 
+    const { rank, firstName, surname, sessions } = user;
+    const sessionInfo = sessions.map(({ session }) => ({
+      location: session.sessionLocation,
+      location2: session.sessionLocation2,
+      date: session.sessionDate,
+      startTime:formatTime( session.startTime),
+      endTime: formatTime(session.endTime),
+    }));
 
-    const { issueText } = req.body;
-
-    const issue = {
-      issue: {
-        badgeID: user.badgeID,
-        issueID,
-        issueText,
-        raised: new Date(),
-        resolved: null, 
-      },
-      pertaining: true,
+    const response = {
+      rank,
+      badgeID,
+      firstName,
+      surname,
+      sessions: sessionInfo,
     };
-    user.issues.push(issue);
 
-    await user.save();
-
-    res.json(issue);
+    res.json(response);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
@@ -206,7 +204,48 @@ exports.getCurrentSession = async (req, res) => {
 };
 
 
-exports.getUserByBadgeID = async (req, res) => {
+exports.createIssue = async (req, res) => {
+  try {
+    const badgeID = parseInt(req.params.badgeID);
+
+    if (isNaN(badgeID)) {
+      return res.status(400).json({ error: 'Invalid badge ID' });
+    }
+
+    const user = await User.findOne({ badgeID });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    const lastIssue = user.issues[user.issues.length - 1];
+    const issueID = lastIssue ? lastIssue.issue.issueID + 1 : 1;
+
+
+    const { issueText } = req.body;
+
+    const issue = {
+      issue: {
+        badgeID: user.badgeID,
+        issueID,
+        issueText,
+        raised: new Date(),
+        resolved: null, 
+      },
+      pertaining: true,
+    };
+    user.issues.push(issue);
+
+    await user.save();
+
+    res.json(issue);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+exports.getPreviousSessionsAttendance = async (req, res) => {
   try {
     const badgeID = parseInt(req.params.badgeID);
 
@@ -220,26 +259,124 @@ exports.getUserByBadgeID = async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    const { rank, firstName, surname, sessions } = user;
-    const sessionInfo = sessions.map(({ session }) => ({
-      location: session.sessionLocation,
-      location2: session.sessionLocation2,
-      date: session.sessionDate,
-      startTime:formatTime( session.startTime),
-      endTime: formatTime(session.endTime),
-    }));
+    const totalSessionsAlloted = user.sessions.length;
+    const totalSessionsAttended = user.sessions.filter(({ attended }) => attended).length;
+    const attendancePercentage = (totalSessionsAlloted > 0)
+      ? (totalSessionsAttended / totalSessionsAlloted) * 100
+      : 0;
 
+    const previousSessions = await Promise.all(
+      user.sessions.map(async ({ session, attended }) => {
+        const sessionID = session;
+        const sessionInfo = await Session.findById(sessionID);
+
+        if (!sessionInfo) {
+          return null; // If session not found, skip this session
+        }
+
+        const { sessionLocation, sessionDate } = sessionInfo;
+        const formattedDate = sessionDate ? sessionDate.toISOString().split('T')[0] : null;
+        const day = sessionDate ? sessionDate.toLocaleDateString('en-US', { weekday: 'long' }) : null;
+
+        return {
+          location: sessionLocation,
+          date: formattedDate,
+          day: day,
+          attended,
+        };
+      })
+    );
+  
+    const filteredPreviousSessions = previousSessions.filter(session => session !== null);
+
+    res.json({
+      name: `${user.firstName} ${user.surname}`,
+      designation: user.rank,
+      attendancePercentage,
+      totalSessionsAttended,
+      totalSessionsAlloted,
+      previousSessions: filteredPreviousSessions,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+exports.getUpcomingSession = async (req, res) => {
+  try {
+    const badgeID = parseInt(req.params.badgeID);
+
+    if (isNaN(badgeID)) {
+      return res.status(400).json({ error: 'Invalid badge ID' });
+    }
+
+    const user = await User.findOne({ badgeID }).populate({
+      path: 'sessions.session',
+      model: 'Session',
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const currentDate = new Date();
+
+    const upcomingSessions = user.sessions.filter(({ session }) => {
+      const sessionDate = new Date(session.sessionDate);
+      return sessionDate > currentDate;
+    });
+
+
+    if (upcomingSessions.length === 0) {
+      return res.json({
+        name: `${user.firstName} ${user.surname}`,
+        rank: user.rank,
+        upcomingSessions: [],
+        message: 'No upcoming sessions found.',
+      });
+    }
     const response = {
-      rank,
-      badgeID,
-      firstName,
-      surname,
-      sessions: sessionInfo,
+      name: `${firstName} ${surname}`,
+      rank: user.rank,
+      upcomingSessions: upcomingSessions.map(({ session }) => ({
+        
+        date: new Date(session.sessionDate).toISOString(), // Convert date to ISO string
+        day: new Date(session.sessionDate).toLocaleDateString('en-US', { weekday: 'long' }),
+        location1: session.sessionLocation,
+        location2: session.sessionLocation2,
+      })),
     };
 
     res.json(response);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
+  }
+};
+
+exports.getProfileOfUserByBadgeID = async (req, res) => {
+  try{
+      const badgeID = parseInt(req.params.badgeID);
+
+      if (isNaN(badgeID)) {
+          return res.status(400).json({ error: 'Invalid badge ID' });
+      }
+    
+      const user = await User.findOne({ badgeID });
+    
+      if (!user) {
+          return res.status(404).json({ error: 'User not found' });
+      }
+      
+      res.json({
+      picture : user.profilePic,
+      name: `${user.firstName} ${user.surname}`,
+      policeId: user.badgeID,
+      mobileNo: user.phoneNo,
+      email: user.emailId,});
+  } catch(error) {
+      console.error(error);
+      res.status(500).json({ error: 'Server error' });
   }
 };
