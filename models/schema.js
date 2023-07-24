@@ -47,11 +47,6 @@ const userSchema = new Schema({
   },
   emailId: {
     type: String,
-    required: 'EmailId cannot be empty',
-    // validate: {
-    //   validator: validator.isEmail,
-    //   message: 'Please provide a valid email'
-    // },
     unique: true,
   },
   gender: {

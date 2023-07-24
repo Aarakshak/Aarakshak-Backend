@@ -1,5 +1,5 @@
-// const User = require('../models/schema');
-// const Session = require('../models/session');
+const User = require('../models/schema');
+const Session = require('../models/session');
 const Admin = require('../models/adminModel');
 
 const dotenv = require('dotenv');
@@ -90,7 +90,7 @@ exports.loginUser = async (req, res) => {
   
       await admin.save();
       const token = jwt.sign(
-        { emailId: admin.emailId, adminID: admin.adminId }, 
+        { emailId: admin.emailId, adminId: admin.adminId }, 
         secretKey,
         {
           expiresIn: '1d', 
@@ -98,9 +98,77 @@ exports.loginUser = async (req, res) => {
       );
       admin.jwtToken = token;
       await admin.save();
-      res.json({ token, badgeID: admin.adminId });
+      res.json({ token, adminId: admin.adminId });
     }catch (error) {
       console.error(error);
       res.status(500).json({ error: 'Server error' });
+  }
+};
+
+exports.addUserByAdmin = async (req, res) => {
+  try {
+    const { adminId } = req.params;
+    const admin = await Admin.findOne({ adminId: adminId });
+    if (!admin) {
+      return res.status(404).json({ error: 'Admin not found' });
+    }
+    const { badgeID, firstName, surname, password, rank, profilePic, location, zone, sub_division, police_station, phoneNo, emailId, gender, reportsTo } = req.body;
+
+    const existingUser = await User.findOne({ $or: [{ badgeID }, { emailId }] });
+    if (existingUser) {
+      return res.status(400).json({ error: 'User with the same badge ID or email ID already exists' });
+    }
+    const user = new User({
+      badgeID,
+      firstName,
+      surname,
+      password,
+      rank,
+      profilePic,
+      location,
+      zone,
+      sub_division,
+      police_station,
+      phoneNo,
+      emailId,
+      gender,
+      reportsTo,
+    });
+    await user.save();
+    res.json({ message: 'User added successfully', user });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+
+exports.addSessionByAdmin = async (req, res) => {
+  try {
+    const { adminId } = req.params;
+    const { sessionID, sessionLocation, sessionLocation2,sessionDate, startTime, endTime } = req.body;
+
+
+    const admin = await Admin.findOne({ adminId : adminId });
+    if (!admin) {
+      return res.status(404).json({ error: 'Admin not found' });
+    }
+
+
+    const session = new Session({
+      sessionID,
+      sessionLocation,
+      sessionLocation2,
+      sessionDate,
+      startTime,
+      endTime,
+    });
+
+    await session.save();
+
+    res.json({ message: 'Session added successfully', sessionId: sessionID });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
   }
 };
