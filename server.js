@@ -8,6 +8,7 @@ const morgan = require('morgan');
 const notFoundMiddleware = require('./middleware/not-found');
 
 const userRoutes = require('./routes/userRoutes');
+const adminRoutes = require('./routes/adminRoutes')
 
 const app = express();
 
@@ -15,6 +16,7 @@ app.use(bodyParser.json());
 app.use(morgan('dev'));
 
 app.use('/v1/user', userRoutes);
+app.use('/v1/admin', adminRoutes);
 
 
 app.use(notFoundMiddleware)

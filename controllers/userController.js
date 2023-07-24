@@ -1,8 +1,8 @@
 const User = require('../models/schema');
 const Session = require('../models/session')
+
 const dotenv = require('dotenv');
 dotenv.config()
-
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const secretKey = crypto.randomBytes(64).toString('hex');
