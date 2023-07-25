@@ -82,20 +82,22 @@ const userSchema = new Schema({
         type: Date,
         required: 'Enter raised date',
       },
-      resolved: Date,
+      resolved: {
+       type: Date,
+      }
     },
     pertaining: Boolean,
   }],
-  sos: [{
-    sosId: {
-      type: Number,
-      required: 'sosId cannot be empty',
-    },
-    desc: {
-      type: String,
-      required: 'Cannot be empty',
-    },
-  }],
+  // sos: [{
+  //   sosId: {
+  //     type: Number,
+  //     required: 'sosId cannot be empty',
+  //   },
+  //   desc: {
+  //     type: String,
+  //     required: 'Cannot be empty',
+  //   },
+  // }],
   otp: {
     type: String,
     required: false, // You can set it to true if you want OTP to be always present for verification
@@ -104,7 +106,16 @@ const userSchema = new Schema({
     type: Date,
     required: false,
   },
-  reportsTo: Number,
+  reportsTo:{
+    type : Number
+  } ,
+
+  latitude: {
+    type: Number,
+  },
+  longitude: {
+    type: Number,
+  },
 });
 
 module.exports = mongoose.model('User', userSchema);

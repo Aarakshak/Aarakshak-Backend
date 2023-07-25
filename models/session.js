@@ -27,6 +27,12 @@ const sessionSchema = new Schema({
     type: Date,
     required: 'End time cannot be empty',
   },
+  latitude: {
+    type: Number,
+  },
+  longitude: {
+    type: Number,
+  },
 });
 
 module.exports = mongoose.model('Session', sessionSchema);

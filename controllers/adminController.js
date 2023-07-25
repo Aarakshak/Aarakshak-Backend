@@ -146,7 +146,7 @@ exports.addUserByAdmin = async (req, res) => {
 exports.addSessionByAdmin = async (req, res) => {
   try {
     const { adminId } = req.params;
-    const { sessionID, sessionLocation, sessionLocation2,sessionDate, startTime, endTime } = req.body;
+    const { sessionID, sessionLocation, sessionLocation2,sessionDate, startTime, endTime,  latitude, longitude  } = req.body;
 
 
     const admin = await Admin.findOne({ adminId : adminId });
@@ -162,11 +162,60 @@ exports.addSessionByAdmin = async (req, res) => {
       sessionDate,
       startTime,
       endTime,
+      latitude,
+      longitude 
     });
 
     await session.save();
 
     res.json({ message: 'Session added successfully', sessionId: sessionID });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+exports.assignUsersToSession = async (req, res) => {
+  try {
+    const { adminId} = req.params;
+    const { sessionId, userIds } = req.body;
+
+    const admin = await Admin.findOne({ adminId : adminId });
+    if (!admin) {
+      return res.status(404).json({ error: 'Admin not found' });
+    }
+
+    const session = await Session.findOne({ sessionID: sessionId });
+    if (!session) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+
+    const users = await User.find({ badgeID: { $in: userIds } });
+
+    if (!users || users.length === 0) {
+      return res.status(404).json({ error: 'Users not found' });
+    }
+   
+    if (!session) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+
+    for (const user of users) {
+      if (user.sessions.some((userSession) => userSession.session === sessionId)) {
+        continue; // Skip if already assigned
+      }
+
+      user.sessions.push({
+        session: session._id,
+        attended: false, 
+      });
+      
+      user.reportsTo = adminId;
+
+      await user.save();
+    }
+
+    res.json({ message: 'Users assigned to sessions successfully' });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
