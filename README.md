@@ -5,14 +5,9 @@ https://documenter.getpostman.com/view/21719363/2s946cgEhk
 1) Push Notification -> new admin
 dashboard - new user notification - work notification, --> 
 2) post assign duty   -> done
-3) issues sos -get request   
-policeName, badgeId, time, location, description, respond
-SOS-card
-resolved: Date,
-},
-pertaining: Boolean,
-post -> boolean
-admin ->  get request at a thane, update , delete
+3) issues sos -get request      -> done
+
+4)admin ->  get request at a thane -> done, 4b)update , 4c)delete
 
 const data = {
       title: title,

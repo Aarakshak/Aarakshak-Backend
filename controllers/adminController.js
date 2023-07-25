@@ -221,3 +221,31 @@ exports.assignUsersToSession = async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 };
+
+exports.getAllIssues = async (req, res) => {
+  try {
+    const {adminId} = req.params;
+
+    const admin = await Admin.findOne({adminId: adminId});
+    if(!admin) {
+      return res.status(404).json({error: 'Admin not found'});
+    }
+    const usersWithIssues = await User.find({});
+
+    const allIssues = usersWithIssues.reduce((issuesList, user) => {
+      if (user.issues && Array.isArray(user.issues)) {
+        // If the user has issues, iterate through each issue
+        user.issues.forEach((issue) => {
+          // Add the issue to the issuesList array
+          issuesList.push(issue);
+        });
+      }
+      return issuesList;
+    }, []);
+
+    res.json(allIssues);
+  }catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
+  } 
+};
