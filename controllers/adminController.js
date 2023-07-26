@@ -142,6 +142,49 @@ exports.addUserByAdmin = async (req, res) => {
   }
 };
 
+exports.updateUserByAdmin = async (req, res) => {
+  try{
+    const {adminId, badgeID} = req.params;
+
+    const user = await User.findOne({badgeID});
+    if(!user) {
+      return res.status(404).json({error: 'User not found'});
+    }
+
+    const fields = req.body;
+
+    for(const key in fields) {
+      if(Object.hasOwnProperty.call(fields, key)) {
+        user[key] = fields[key];
+      }
+    }
+
+    await user.save();
+
+    res.json({message: 'User information updated successfully'})
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({error: 'Server error'});
+  }
+}
+
+exports.deleteUser = async (req, res) => {
+  try {
+    const {adminId, badgeID} = req.params;
+    const user = await User.findOne({ badgeID});
+
+    if(!user) {
+      return res.status(404).json({error: 'User not found'});
+    }
+
+    await user.deleteOne({badgeID});
+
+    res.json({message : 'User deleted successfully'});
+  } catch(error) {
+    console.error (error);
+    res.status(500).json({error : 'Server error'});
+  }
+};
 
 exports.addSessionByAdmin = async (req, res) => {
   try {
