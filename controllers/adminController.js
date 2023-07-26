@@ -338,6 +338,32 @@ async function generateNewNotificationId() {
   }
 }
 
+const Admin = require('../models/adminModel');
+
+exports.createAdmin = async (req, res) => {
+  try {
+    const { adminId, firstName, emailId, password, designation } = req.body;
+    const existingAdmin = await Admin.findOne({ $or: [{ adminId }, { emailId }] });
+    if (existingAdmin) {
+      return res.status(400).json({ error: 'Admin with the same adminId or emailId already exists' });
+    }
+
+    const admin = new Admin({
+      adminId,
+      firstName,
+      emailId,
+      password,
+      designation,
+    });
+
+    await admin.save();
+
+    res.json({ message: 'Admin user created successfully', admin });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
 
 
 
