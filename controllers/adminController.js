@@ -249,3 +249,56 @@ exports.getAllIssues = async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   } 
 };
+exports.addUserNotificationByAdmin = async (req, res) => {
+  try {
+    const { adminId,badgeID } = req.params;
+    const { type, message } = req.body;
+
+    const user = await User.findOne({ badgeID });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const notificationID = await generateNewNotificationId();
+
+    const notification = {
+      notificationID :notificationID,
+      type : type,
+      message: message,
+      timestamp: Date.now(),
+      read: false,
+    };
+    user.notifications.push(notification);
+    await user.save();
+
+    res.json({ message: 'Notification added successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+async function generateNewNotificationId() {
+  try {
+    const lastNotification = await User.findOne().sort({ 'notifications.notificationID': -1 });
+    let newNotificationId = 1;
+
+    if (lastNotification && lastNotification.notifications.length > 0) {
+      newNotificationId = lastNotification.notifications[0].notificationID + 1;
+    }
+
+    return newNotificationId;
+  } catch (error) {
+    console.error('Error generating notificationId', error);
+    throw error;
+  }
+}
+
+
+
+
+
+
+
+

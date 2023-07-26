@@ -8,7 +8,7 @@ dashboard - new user notification - work notification, -->
 3) issues sos -get request      -> done
 
 4)admin ->  get request at a thane -> done, 4b)update , 4c)delete
-
+5) signup
 const data = {
       title: title,
       date: date,

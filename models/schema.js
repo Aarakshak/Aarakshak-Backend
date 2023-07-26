@@ -116,6 +116,30 @@ const userSchema = new Schema({
   longitude: {
     type: Number,
   },
+  notifications: [
+    {
+      notificationID: {
+        type: Number,
+        required: true,
+      },
+      type: {
+        type: String,
+        required: true,
+      },
+      message: {
+        type: String,
+        required: true,
+      },
+      timestamp : {
+        type: Date,
+        default: Date.now,
+      },
+      read: {
+        type: Boolean,
+        default : false,
+      },
+    }
+  ]
 });
 
 module.exports = mongoose.model('User', userSchema);

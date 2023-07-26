@@ -362,13 +362,10 @@ exports.getProfileOfUserByBadgeID = async (req, res) => {
       if (isNaN(badgeID)) {
           return res.status(400).json({ error: 'Invalid badge ID' });
       }
-    
       const user = await User.findOne({ badgeID });
-    
       if (!user) {
           return res.status(404).json({ error: 'User not found' });
       }
-      
       res.json({
       picture : user.profilePic,
       name: `${user.firstName} ${user.surname}`,
@@ -380,3 +377,39 @@ exports.getProfileOfUserByBadgeID = async (req, res) => {
       res.status(500).json({ error: 'Server error' });
   }
 };
+
+exports.getUserNotifications = async (req, res) => {
+  try {
+    const { badgeID } = req.params;
+    const user = await User.findOne({ badgeID });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.json(user.notifications);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+exports.markNotificatonsReaded = async (req, res) => {
+  try{
+  const { badgeID, notificationId } = req.params;
+  const user = await User.findOne({ badgeID });
+
+  if (!user) {
+    return res.status(404).json({ error: 'User not found' });
+  }
+const notification = user.notifications.find((n) => n.notificationId === (notificationId));
+
+if (!notification) {
+  return res.status(404).json({ error: 'Notification not found' });
+}
+notification.read = true;
+await user.save();
+res.json({ message: 'Notification marked as read' });
+}catch (error) {
+  console.error(error);
+  res.status(500).json({ error: 'Server error' });
+};
+}

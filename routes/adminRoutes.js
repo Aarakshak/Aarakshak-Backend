@@ -8,4 +8,5 @@ router.post('/add-user/:adminId',  adminController.addUserByAdmin);
 router.post('/add-session/:adminId',  adminController.addSessionByAdmin);
 router.post('/assign-session/:adminId',  adminController.assignUsersToSession);
 router.get('/sos/:adminId',  adminController.getAllIssues);
+router.post('/notif/:adminId/:badgeID',  adminController.addUserNotificationByAdmin);
 module.exports = router;
