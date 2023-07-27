@@ -11,4 +11,5 @@ router.post('/add-session/:adminId',  adminController.addSessionByAdmin);
 router.post('/assign-session/:adminId',  adminController.assignUsersToSession);
 router.get('/sos/:adminId',  adminController.getAllIssues);
 router.post('/notif/:adminId/:badgeID',  adminController.addUserNotificationByAdmin);
+router.post('/create-admin', adminController.createAdmin);
 module.exports = router;
