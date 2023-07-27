@@ -6,10 +6,14 @@ const adminSchema = new mongoose.Schema({
         required: true,
         unique: true,
     },
+    policeStation: [{
+        policeStationId: {
+            type: Number
+        },
+    }],
     firstName: {
         type : String,
         required: true,
-        unique: true,
     }, 
     emailId: {
         type : String,
@@ -25,9 +29,9 @@ const adminSchema = new mongoose.Schema({
     },
     otp: {
         type: String,
-        required: false, // You can set it to true if you want OTP to be always present for verification
+        required: false, 
       },
-      otpExpiration: {
+    otpExpiration: {
         type: Date,
         required: false,
       },

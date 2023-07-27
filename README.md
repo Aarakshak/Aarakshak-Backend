@@ -2,28 +2,20 @@
 API - documentation
 https://documenter.getpostman.com/view/21719363/2s946cgEhk
 
-1) Push Notification -> done
-2) post assign duty   -> done
-3) issues sos -get request      -> done
-4)admin ->  get request at a thane -> done, 4b)update , 4c)delete -> done
-5) signup
-6) survelience page
-const data = {
-      title: title,
-      date: date,
-      time: time,
-      description: description,
-      choiceValue: choiceValue,
-};
+proposed idea 5->USERS) -> HEAD(INSPECTOR) -> ADMIN // POLICEID-CHECK
 
-const data = {
-      employeeId: employeeId,
-      commandingOfficerId: commandingOfficerId,
-      location: location,
-      date: date,
-      startTime: startTime,
-      endTime: endTime,
-      longitude: longitude,
-      latitude: latitude,  4 -> precision
-};
-assign duty fields
+
+1) Assign policeStationID to admins -->done
+2) Assign policeStationID to users -> done
+3) check for police users(1 to 1000), police Station id (2000 - 3000) for notifications push  --> Done
+4) policeStationId, array, admin to check policeId is a validId, or not; --> Done
+5) check on post request -> policeStationId
+6) sessionId auto increment  --> done
+7) notifcationid auto increment  --> done
+8) issue field-> title --> done
+9) date, time alag alag  --> sorted done
+10) default password - 12345 --> done
+11) survelience page // return sessions // checkpoint
+12) password change for user in app
+
+prustagi_be20@thapar.edu

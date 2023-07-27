@@ -11,10 +11,10 @@ const sessionSchema = new Schema({
     type: String,
     required: 'Location cannot be empty',
   },
-  sessionLocation2: {
-    type: String,
-    required: 'Location cannot be empty',
-  },
+  // sessionLocation2: {
+  //   type: String,
+  //   required: 'Location cannot be empty',
+  // },
   sessionDate: {
     type: Date,
     required: 'Date cannot be empty',
@@ -37,6 +37,9 @@ const sessionSchema = new Schema({
     timestamp: Date,
     isLocationCorrect: Boolean,
   }],
+  description: {
+    type: String,
+  }
 });
 
 module.exports = mongoose.model('Session', sessionSchema);

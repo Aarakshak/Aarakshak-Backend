@@ -112,27 +112,28 @@ exports.addUserByAdmin = async (req, res) => {
     if (!admin) {
       return res.status(404).json({ error: 'Admin not found' });
     }
-    const { badgeID, firstName, surname, password, rank, profilePic, location, zone, sub_division, police_station, phoneNo, emailId, gender, reportsTo } = req.body;
+    const { badgeID, firstName, surname, rank, profilePic, policeStationId, location, zone, sub_division, police_station, phoneNo, emailId, gender } = req.body;
+    const policeStationAllowed = admin.policeStation.some(station => station.policeStationId === policeStationId);
+
+    if (!policeStationAllowed) {
+      return res.status(400).json({ error: 'Invalid policeStationId. The admin cannot assign this policeStation to the user.' });
+    }
 
     const existingUser = await User.findOne({ $or: [{ badgeID }, { emailId }] });
     if (existingUser) {
       return res.status(400).json({ error: 'User with the same badge ID or email ID already exists' });
     }
     const user = new User({
-      badgeID,
-      firstName,
-      surname,
-      password,
-      rank,
-      profilePic,
-      location,
-      zone,
-      sub_division,
-      police_station,
+      badgeID: badgeID,
+      firstName: firstName,
+      surname : surname,
+      rank : rank,
+      profilePic : profilePic,
+      policeStationId : policeStationId,
       phoneNo,
       emailId,
       gender,
-      reportsTo,
+      reportsTo : adminId,
     });
     await user.save();
     res.json({ message: 'User added successfully', user });
@@ -203,8 +204,10 @@ function generateCheckPoints(startTime, endTime, numCheckPoints){
 exports.addSessionByAdmin = async (req, res) => {
   try {
     const { adminId } = req.params;
-    const { sessionID, sessionLocation, sessionLocation2,sessionDate, startTime, endTime,  latitude, longitude  } = req.body;
+    const { sessionLocation, sessionDate, startTime, endTime,  latitude, longitude  } = req.body;
 
+    const lastSession = await Session.findOne().sort({sessionID: -1});
+    const sessionID = lastSession ? lastSession.sessionID + 1 : 1;
 
     const admin = await Admin.findOne({ adminId : adminId });
     if (!admin) {
@@ -217,7 +220,6 @@ exports.addSessionByAdmin = async (req, res) => {
     const session = new Session({
       sessionID,
       sessionLocation,
-      sessionLocation2,
       sessionDate,
       startTime,
       endTime,
@@ -238,7 +240,7 @@ exports.addSessionByAdmin = async (req, res) => {
 exports.assignUsersToSession = async (req, res) => {
   try {
     const { adminId} = req.params;
-    const { sessionId, userIds } = req.body;
+    const { sessionId, userIds , description} = req.body;
 
     const admin = await Admin.findOne({ adminId : adminId });
     if (!admin) {
@@ -262,7 +264,7 @@ exports.assignUsersToSession = async (req, res) => {
 
     for (const user of users) {
       if (user.sessions.some((userSession) => userSession.session === sessionId)) {
-        continue; // Skip if already assigned
+        continue; 
       }
 
       user.sessions.push({
@@ -274,7 +276,7 @@ exports.assignUsersToSession = async (req, res) => {
 
       await user.save();
     }
-
+    
     res.json({ message: 'Users assigned to sessions successfully' });
   } catch (error) {
     console.error(error);
@@ -294,9 +296,7 @@ exports.getAllIssues = async (req, res) => {
 
     const allIssues = usersWithIssues.reduce((issuesList, user) => {
       if (user.issues && Array.isArray(user.issues)) {
-        // If the user has issues, iterate through each issue
         user.issues.forEach((issue) => {
-          // Add the issue to the issuesList array
           issuesList.push(issue);
         });
       }
@@ -309,28 +309,71 @@ exports.getAllIssues = async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   } 
 };
+
+async function generateNewNotificationId(badgeID) {
+  try {
+    const user = await User.findOne({ badgeID: badgeID }).sort({ 'notifications.notificationID': -1 });
+
+    if (user && user.notifications.length > 0) {
+      return user.notifications[0].notificationID + 1;
+    }
+
+    return 1;
+  } catch (error) {
+    console.error('Error generating notificationId', error);
+    throw error;
+  }
+}
+
 exports.addUserNotificationByAdmin = async (req, res) => {
   try {
     const { adminId,badgeID } = req.params;
-    const { type, message } = req.body;
+    const { title, type, message } = req.body;
 
-    const user = await User.findOne({ badgeID });
+    if (badgeID >= 20000 && badgeID <= 30000) {
+      // Send notifications to all users with the given policeStationId (badgeID)
+      const usersWithPoliceStationId = await User.find({ policeStationId: badgeID });
 
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      if (usersWithPoliceStationId.length === 0) {
+        return res.status(404).json({ error: 'No users found with the specified policeStationId' });
+      }
+
+      for (const user of usersWithPoliceStationId) {
+        const notificationID = await generateNewNotificationId();
+        const notification = {
+          notificationID: notificationID,
+          title: title,
+          type: type,
+          message: message,
+          timestamp: Date.now(),
+          read: false,
+        };
+        user.notifications.push(notification);
+        await user.save();
+      }
+    } else if (badgeID >= 1 && badgeID <= 1000) {
+    
+      const user = await User.findOne({ badgeID: badgeID });
+
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      const notificationID = await generateNewNotificationId();
+
+      const notification = {
+        notificationID: notificationID,
+        title: title,
+        type: type,
+        message: message,
+        timestamp: Date.now(),
+        read: false,
+      };
+      user.notifications.push(notification);
+      await user.save();
+    }else {
+      return res.status(400).json({ error: 'Invalid badgeID. The badgeID must be between 1 to 1000 or 20000 to 30000' });
     }
-
-    const notificationID = await generateNewNotificationId();
-
-    const notification = {
-      notificationID :notificationID,
-      type : type,
-      message: message,
-      timestamp: Date.now(),
-      read: false,
-    };
-    user.notifications.push(notification);
-    await user.save();
 
     res.json({ message: 'Notification added successfully' });
   } catch (error) {
@@ -339,23 +382,6 @@ exports.addUserNotificationByAdmin = async (req, res) => {
   }
 };
 
-async function generateNewNotificationId() {
-  try {
-    const lastNotification = await User.findOne().sort({ 'notifications.notificationID': -1 });
-    let newNotificationId = 1;
-
-    if (lastNotification && lastNotification.notifications.length > 0) {
-      newNotificationId = lastNotification.notifications[0].notificationID + 1;
-    }
-
-    return newNotificationId;
-  } catch (error) {
-    console.error('Error generating notificationId', error);
-    throw error;
-  }
-}
-
-// const Admin = require('../models/adminModel');
 
 exports.createAdmin = async (req, res) => {
   try {

@@ -18,7 +18,7 @@ const userSchema = new Schema({
   },
   password : {
     type: String,
-    required: 'Cannot be empty'
+    default : '12345'
   },
   rank: {
     type: String,
@@ -28,18 +28,8 @@ const userSchema = new Schema({
     type: String,
     required: 'Photo cannot be empty',
   },
-  location: {
-    type: String,
-    required: 'Location cannot be empty',
-  },
-  zone: {
-    type: String,
-  },
-  sub_division: {
-    type: String,
-  },
-  police_station: {
-    type: Number,
+  policeStationId: {
+    type: Number, 
   },
   phoneNo: {
     type: String,
@@ -78,6 +68,10 @@ const userSchema = new Schema({
         type: Number,
         required: 'ID cannot be empty',
       },
+      title : {
+        type: String,
+        required: 'Title cannot be empty'
+      },
       issueText: {
         type: String,
         required: 'Issue cannot be empty',
@@ -88,20 +82,16 @@ const userSchema = new Schema({
       },
       resolved: {
        type: Date,
-      }
+      },
+      latitude:{
+        type : Number,
+      },
+      longitude:{
+        type : Number,
+      }        
     },
     pertaining: Boolean,
   }],
-  // sos: [{
-  //   sosId: {
-  //     type: Number,
-  //     required: 'sosId cannot be empty',
-  //   },
-  //   desc: {
-  //     type: String,
-  //     required: 'Cannot be empty',
-  //   },
-  // }],
   otp: {
     type: String,
     required: false, // You can set it to true if you want OTP to be always present for verification
@@ -112,8 +102,7 @@ const userSchema = new Schema({
   },
   reportsTo:{
     type : Number
-  } ,
-
+  },
   latitude: {
     type: Number,
   },
@@ -125,6 +114,10 @@ const userSchema = new Schema({
       notificationID: {
         type: Number,
         required: true,
+      },
+      title :{
+        type: String,
+        required : true,
       },
       type: {
         type: String,

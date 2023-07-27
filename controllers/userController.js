@@ -222,13 +222,14 @@ exports.createIssue = async (req, res) => {
     const issueID = lastIssue ? lastIssue.issue.issueID + 1 : 1;
 
 
-    const { issueText } = req.body;
+    const { title,  issueText } = req.body;
 
     const issue = {
       issue: {
         badgeID: user.badgeID,
-        issueID,
-        issueText,
+        issueID: issueID,
+        title: title,
+        issueText : issueText,
         raised: new Date(),
         resolved: null, 
       },
@@ -467,7 +468,7 @@ exports.checkInCheckpoint = async(req, res) => {
     const currentTime = Date.now();
     const tenMinutesAgo = currentTime - 10 * 60 * 1000;
     if (timestamp < tenMinutesAgo || timestamp > currentTime) {
-      return res.status(400).json({ error: 'Invalid timestamp' });
+      return res.status(400).json({ error: 'Invalid timestamp'});
     }
 
     const isWithinThreshold = checkWithinThreshold(user, session, 100);
