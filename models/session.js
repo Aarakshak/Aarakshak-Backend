@@ -33,6 +33,10 @@ const sessionSchema = new Schema({
   longitude: {
     type: Number,
   },
+  checkpoints: [{
+    timestamp: Date,
+    isLocationCorrect: Boolean,
+  }],
 });
 
 module.exports = mongoose.model('Session', sessionSchema);

@@ -62,6 +62,10 @@ const userSchema = new Schema({
       type: Boolean,
       default: false,
     },
+    attendedCheckpoints: {
+      type: Number,
+      default: 0,
+    },
   }],
   issues: [{
     issue: {

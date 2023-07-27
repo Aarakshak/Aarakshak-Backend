@@ -413,3 +413,78 @@ res.json({ message: 'Notification marked as read' });
   res.status(500).json({ error: 'Server error' });
 };
 }
+
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371e3; 
+  const φ1 = lat1 * Math.PI / 180;
+  const φ2 = lat2 * Math.PI / 180; 
+  const Δφ = (lat2 - lat1) * Math.PI / 180; 
+  const Δλ = (lon2 - lon1) * Math.PI / 180; 
+
+  const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+            Math.cos(φ1) * Math.cos(φ2) *
+            Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  const distance = R * c;
+  return distance;
+}
+
+function checkWithinThreshold(user, session, threshold) {
+  const userLat = user.latitude;
+  const userLon = user.longitude;
+
+  const sessionLat = session.latitude;
+  const sessionLon = session.longitude;
+
+  const distance = calculateDistance(userLat, userLon, sessionLat, sessionLon);
+
+ 
+  if (distance <= threshold) {
+    return true; 
+  } else {
+    return false; 
+  }
+}
+
+exports.checkInCheckpoint = async(req, res) => {
+  try{
+    const {badgeID, sessionID} = req.params;
+    const {timestamp} = req.body;
+
+    const user = await User.findOne({badgeID: badgeID});
+
+    if(!user){
+      return res.status(404).json({error: 'User not found'});
+    }
+
+    const session = await Session.findOne({sessionID: sessionID });
+    if(!session)
+    {
+      return res.status(404).json({error: 'Session not found or wrong session logged In'});
+    }
+
+    const currentTime = Date.now();
+    const tenMinutesAgo = currentTime - 10 * 60 * 1000;
+    if (timestamp < tenMinutesAgo || timestamp > currentTime) {
+      return res.status(400).json({ error: 'Invalid timestamp' });
+    }
+
+    const isWithinThreshold = checkWithinThreshold(user, session, 100);
+
+    if (isWithinThreshold) {
+      const checkpointIndex = user.sessions.findIndex((session) => session.session.equals(ObjectId(sessionID)));
+
+      if (checkpointIndex !== -1) {
+        user.sessions[checkpointIndex].attendedCheckpoints += 1;
+        await user.save();
+      }
+    }
+    
+    res.json({ message: 'Checkpoint checked in successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
+  }
+
+};

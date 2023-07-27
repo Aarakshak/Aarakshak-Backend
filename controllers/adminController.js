@@ -186,6 +186,20 @@ exports.deleteUser = async (req, res) => {
   }
 };
 
+function generateCheckPoints(startTime, endTime, numCheckPoints){
+  const randomCheckpoints = [];
+  const startTimeStamp = new Date(startTime).getTime();
+  const endTimeStamp = new Date(endTime).getTime();
+  const interval = (endTimeStamp - startTimeStamp)/numCheckPoints;
+
+  for(let i = 0; i<numCheckPoints; i++)
+  {
+    const randomTime = startTimeStamp + i * interval + Math.random() * interval;
+    randomCheckpoints.push({ timestamp: new Date(randomTime) });
+  }
+  return randomCheckpoints;
+}
+
 exports.addSessionByAdmin = async (req, res) => {
   try {
     const { adminId } = req.params;
@@ -197,6 +211,8 @@ exports.addSessionByAdmin = async (req, res) => {
       return res.status(404).json({ error: 'Admin not found' });
     }
 
+    const numCheckpoints =  10;
+    const randomCheckpoints = generateCheckPoints(startTime, endTime,numCheckpoints );
 
     const session = new Session({
       sessionID,
@@ -206,7 +222,8 @@ exports.addSessionByAdmin = async (req, res) => {
       startTime,
       endTime,
       latitude,
-      longitude 
+      longitude ,
+      checkpoints: randomCheckpoints
     });
 
     await session.save();
@@ -338,7 +355,7 @@ async function generateNewNotificationId() {
   }
 }
 
-const Admin = require('../models/adminModel');
+// const Admin = require('../models/adminModel');
 
 exports.createAdmin = async (req, res) => {
   try {
@@ -364,9 +381,6 @@ exports.createAdmin = async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 };
-
-
-
 
 
 
