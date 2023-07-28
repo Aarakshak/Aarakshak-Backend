@@ -183,11 +183,10 @@ exports.getCurrentSession = async (req, res) => {
       return res.status(404).json({ error: 'No current session found' });
     }
 
-    const { sessionLocation, sessionLocation2, startTime, endTime, checkpoints } = currentSession.session;
+    const { sessionLocation,  startTime, endTime, checkpoints } = currentSession.session;
 
     const response = {
       location1: sessionLocation,
-      location2: sessionLocation2,
       reportingTo: user.reportsTo,
       checkInTime: startTime,
       checkOutTime: endTime,
@@ -259,9 +258,28 @@ exports.getPreviousSessionsAttendance = async (req, res) => {
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
+    if (!user.sessions || !Array.isArray(user.sessions)) {
+      return res.status(404).json({ error: 'No session data found for the user' });
+    }
+
+    user.sessions.forEach((session) => {
+      if (session && session.checkpoints && Array.isArray(session.checkpoints)) {
+        session.totalCheckpoints = session.checkpoints.length;
+      }
+    });
+
+    user.sessions.forEach((session) => {
+      if (session && session.totalCheckpoints) {
+        const sessionsAttended = session.attendedCheckpoints >= session.totalCheckpoints * 0.75;
+        session.attended = sessionsAttended;
+      }
+    });
+    
+    await user.save();
 
     const totalSessionsAlloted = user.sessions.length;
     const totalSessionsAttended = user.sessions.filter(({ attended }) => attended).length;
+
     const attendancePercentage = (totalSessionsAlloted > 0)
       ? (totalSessionsAttended / totalSessionsAlloted) * 100
       : 0;
@@ -272,7 +290,7 @@ exports.getPreviousSessionsAttendance = async (req, res) => {
         const sessionInfo = await Session.findById(sessionID);
 
         if (!sessionInfo) {
-          return null; // If session not found, skip this session
+          return null; 
         }
 
         const { sessionLocation, sessionDate } = sessionInfo;
@@ -451,7 +469,7 @@ function checkWithinThreshold(user, session, threshold) {
 exports.checkInCheckpoint = async(req, res) => {
   try{
     const {badgeID, sessionID} = req.params;
-    const {timestamp} = req.body;
+    const {timestamp, location} = req.body;
 
     const user = await User.findOne({badgeID: badgeID});
 
@@ -478,8 +496,22 @@ exports.checkInCheckpoint = async(req, res) => {
 
       if (checkpointIndex !== -1) {
         user.sessions[checkpointIndex].attendedCheckpoints += 1;
+        user.sessions[checkpointIndex].totalCheckpoints += 1;
+        user.sessions[checkpointIndex].lastAttended = true;
+        user.sessions[checkpointIndex].lastCheckpointTimestamp = timestamp;
+        user.sessions[checkpointIndex].lastCheckpointLocation = location;
         await user.save();
-      }
+      } 
+    }else{
+        const checkpointIndex = user.sessions.findIndex((session) => session.session.equals(ObjectId(sessionID)));
+
+        if (checkpointIndex !== -1) {
+          user.sessions[checkpointIndex].totalCheckpoints += 1;
+          user.sessions[checkpointIndex].lastAttended = false;
+          user.sessions[checkpointIndex].lastCheckpointTimestamp = timestamp;
+          user.sessions[checkpointIndex].lastCheckpointLocation = location;
+          await user.save();
+        }
     }
     
     res.json({ message: 'Checkpoint checked in successfully' });

@@ -56,6 +56,20 @@ const userSchema = new Schema({
       type: Number,
       default: 0,
     },
+    totalCheckpoints: {
+      type: Number,
+      default: 0,
+    },
+    lastAttended: {
+      type: Boolean,
+      default: false,
+    },
+    lastCheckpointTimestamp: {
+      type: Date,
+    },
+    lastCheckpointLocation: {
+      type: String,
+    }
   }],
   issues: [{
     issue: {
@@ -94,7 +108,7 @@ const userSchema = new Schema({
   }],
   otp: {
     type: String,
-    required: false, // You can set it to true if you want OTP to be always present for verification
+    required: false, 
   },
   otpExpiration: {
     type: Date,

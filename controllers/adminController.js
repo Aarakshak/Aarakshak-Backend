@@ -382,6 +382,48 @@ exports.addUserNotificationByAdmin = async (req, res) => {
   }
 };
 
+exports.getUpcomingSessionsForSurviellance = async(req, res) => {
+  try {
+    const {adminId} = req.params;
+    const admin = await Admin.findOne({adminId : adminId});
+    if(!admin) 
+    {
+      return res.status(404).json({ error: 'Admin not found' });
+    }
+
+   
+    const users = await User.find({ policeStationId: { $in: admin.policeStation.map(ps => ps.policeStationId) } });
+
+    const currentDate = new Date();
+
+    const date = req.query.date;
+
+    const upcomingSessions = users.flatMap(user => user.sessions.filter(session => {
+      return session.sessionDate.toISOString().split('T')[0] === date && session.sessionDate >currentDate;
+    }))
+
+    const currentSessions = users.flatMap(user => user.sessions.filter(session => {
+      return session.sessionDate.toISOString().split('T')[0] === date && session.sessionDate <= currentDate;
+    }));
+    const userInfo = users.map(user => {
+      return {
+        name: `${user.firstName} ${user.surname}`,
+        mobileNo: user.phoneNo,
+        emailId: user.emailId,
+        photo: user.profilePic,
+        lastAttendedCheck: user.sessions[user.sessions.length - 1]?.attendedCheckpoints || 0,
+      };
+    });
+    res.json({
+      userInfo,
+      upcomingSessions,
+      currentSessions,
+    })
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
+}
+}
 
 exports.createAdmin = async (req, res) => {
   try {
@@ -404,10 +446,6 @@ exports.createAdmin = async (req, res) => {
     res.json({ message: 'Admin user created successfully', admin });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: 'Server error' })
   }
-};
-
-
-
-
+}
