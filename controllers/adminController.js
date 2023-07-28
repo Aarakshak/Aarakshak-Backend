@@ -432,7 +432,6 @@ exports.createAdmin = async (req, res) => {
     if (existingAdmin) {
       return res.status(400).json({ error: 'Admin with the same adminId or emailId already exists' });
     }
-
     const admin = new Admin({
       adminId,
       firstName,

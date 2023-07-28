@@ -14,8 +14,8 @@ proposed idea 5->USERS) -> HEAD(INSPECTOR) -> ADMIN // POLICEID-CHECK
 7) notifcationid auto increment  --> done
 8) issue field-> title --> done
 9) date, time alag alag  --> sorted done
-10) default password - 12345 --> done
-11) survelience page // return sessions // checkpoint
+10) default password - 12345 --> done 
+11) survelience page // return sessions // checkpoint  --> done
 12) password change for user in app
 
 prustagi_be20@thapar.edu
