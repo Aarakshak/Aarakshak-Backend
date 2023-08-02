@@ -69,6 +69,20 @@ const userSchema = new Schema({
     },
     lastCheckpointLocation: {
       type: String,
+    },
+    dutyStarted: {
+      type: Boolean,
+      default: false,
+    },
+    dutyStartTime: {
+      type: Date,
+    },
+    dutyEnded: {
+      type: Boolean,
+      default: false,
+    },
+    dutyEndTime: {
+      type: Date,
     }
   }],
   issues: [{

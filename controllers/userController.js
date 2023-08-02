@@ -520,3 +520,36 @@ exports.checkInCheckpoint = async(req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 };
+
+exports.updateSessionRadiusFromNFC = async (req, res) => {
+  try {
+    const {badgeID} = req.params;
+    const { latitude, longitude, radius } = req.body;
+
+    // Find the user by badgeID
+    const user = await User.findOne({ badgeID });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Find the session assigned to the user based on matching latitude and longitude
+    const session = await Session.findOne({
+      locationLatitude: latitude,
+      locationLongitude: longitude
+    });
+
+    if (!session) {
+      return res.status(404).json({ error: 'Session not found for user' });
+    }
+
+    // Update the session's radius
+    session.locationRadius = radius;
+    await session.save();
+
+    res.json({ message: 'Session radius updated successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
