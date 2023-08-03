@@ -28,15 +28,15 @@ app.use(notFoundMiddleware)
 
 const port = 8000;
 mongoose.connect(process.env.MONGO_URL, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-  .then(() => {
-    console.log('Connected to MongoDB');
-    app.listen(8000, () => {
-      console.log(`Server started on port: ${port}`);
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+    })
+    .then(() => {
+        console.log('Connected to MongoDB');
+        app.listen(8000, () => {
+            console.log(`Server started on port: ${port}`);
+        });
+    })
+    .catch((error) => {
+        console.error('MongoDB connection error:', error);
     });
-  })
-  .catch((error) => {
-    console.error('MongoDB connection error:', error);
-  });

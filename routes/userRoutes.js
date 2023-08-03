@@ -13,5 +13,5 @@ router.get('/:badgeID', userController.getProfileOfUserByBadgeID);
 router.get('/notifications/:badgeID', userController.getUserNotifications);
 router.patch('/notifications/:badgeID/:notificationID', userController.markNotificatonsReaded);
 router.post('/checkIn/:badgeID/:sessionID', userController.checkInCheckpoint);
-
+router.get('/createPdf/:badgeID', userController.createpdf);
 module.exports = router;

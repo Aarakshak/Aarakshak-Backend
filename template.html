@@ -14,24 +14,24 @@
         <br>
         <h1>Officer details</h1>
     </div>
-    <h2>Officer# {{badgeID}}</h2>
-    <h2>Name: {{surname}}, {{firstName}}</h2>
-    <h2>Rank: {{rank}}</h2>
-    <h2>Location of service: {{location}}</h2>
-    <h2>Gender: {{gender}}</h2>
+    <h3>Officer# {{badgeID}}</h3>
+    <h3>Name: {{surname}}, {{firstName}}</h3>
+    <h3>Rank: {{rank}}</h3>
+    <h3>Gender: {{gender}}</h3>
+    <h3>Reports to:{{reportsTo}}</h3>
     <div style="text-align: center;">
         <h1>Sessions</h1>
+        {{#if sessions}}
+        <div>
+            {{#each sessions}}
+            <h4>Session ID: {{this.session.sessionID}}</h4>
+            <p>Session Date: {{formatDate this.session.sessionDate}}</p>
+            <p>Start Time: {{formatTime this.session.startTime}}</p>
+            <p>End Time: {{formatTime this.session.endTime}}</p>
+            {{/each}}
+        </div>
+        {{/if}}
     </div>
-    {{#if sessions}}
-    <div>
-        {{#each sessions}}
-        <h4>Session ID: {{this.session.sessionID}}</h4>
-        <p>Session Date: {{formatDate this.session.sessionDate}}</p>
-        <p>Start Time: {{formatTime this.session.startTime}}</p>
-        <p>End Time: {{formatTime this.session.endTime}}</p>
-        {{/each}}
-    </div>
-    {{/if}} {{/each}}
 
     <script>
         function formatDate(dateString) {
@@ -50,15 +50,3 @@
 </body>
 
 </html>
-
-<!-- badgeID: user.badgeID,
-                firstName: user.firstName,
-                surname: user.surname,
-                rank: user.rank,
-                pic: user.profilePic,
-                location: user.location,
-                gender: user.gender,
-                sessions: user.sessions,
-                attended: user.attended,
-                issues: user.issues,
-                reportsTo: user.reportsTo, -->
