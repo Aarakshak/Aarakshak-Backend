@@ -225,6 +225,7 @@ exports.addSessionByAdmin = async (req, res) => {
       endTime,
       latitude,
       longitude ,
+      createdBy: adminId,
       checkpoints: randomCheckpoints
     });
 
@@ -236,6 +237,24 @@ exports.addSessionByAdmin = async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 };
+
+exports.getSessionsByAdmin = async (req, res) => {
+  try {
+    const { adminId } = req.params;
+
+    const sessions = await Session.find({ createdBy: adminId });
+
+    if (!sessions || sessions.length === 0) {
+      return res.status(404).json({ error: 'No sessions found for this admin' });
+    }
+
+    res.json(sessions);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
 exports.getAllSessions = async(req, res) => {
   const { adminId } = req.params;
   const admin = await Admin.findOne({ adminId: adminId });
@@ -249,6 +268,7 @@ exports.getAllSessions = async(req, res) => {
 
   res.json({ sess })
 };
+
 
 exports.assignUsersToSession = async (req, res) => {
   try {

@@ -33,6 +33,9 @@ const sessionSchema = new Schema({
   longitude: {
     type: Number,
   },
+  createdBy:{
+    type: Number
+  },
   checkpoints: [{
     timestamp: Date,
     isLocationCorrect: Boolean,
