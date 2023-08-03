@@ -464,6 +464,18 @@ function checkWithinThreshold(user, session, threshold) {
         return false;
     }
 }
+
+function convertPDFToBytes(filePath) {
+    return new Promise((resolve, reject) => {
+        fs.readFile(filePath, (err, data) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(data);
+            }
+        });
+    });
+}
 exports.createpdf = async(req, res) => {
 
     const { badgeID } = req.params
@@ -535,8 +547,7 @@ exports.createpdf = async(req, res) => {
         format: "A4",
         orientation: "portrait",
         header: {
-            height: '35mm',
-            contents: '<img src="https://truthultimate.com/wp-content/uploads/2021/09/Satyamev-Jayate-Logo.png" style="width:10%;height:15%;" alt="">'
+            height: '0mm',
         },
         // footer: {
         //     height: '20mm',
@@ -551,6 +562,7 @@ exports.createpdf = async(req, res) => {
             trim: true
         }
     });
+    const path = "./Report" + badgeID + ".pdf"
     const document = {
         html: html,
         data: data,
@@ -563,6 +575,15 @@ exports.createpdf = async(req, res) => {
     // if (result) {
     //     res.json({ mssg: "Done" })
     // }
+
+    convertPDFToBytes(path)
+        .then(pdfBytes => {
+            console.log('PDF converted to bytes:', pdfBytes);
+            // Now you can use `pdfBytes` as needed
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
 }
 exports.checkInCheckpoint = async(req, res) => {
     try {
@@ -617,68 +638,68 @@ exports.checkInCheckpoint = async(req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 };
-    
 
-exports.startDutyFromNFC = async (req, res) => {
-  try {
-    const {badgeID} = req.params;
-    const { latitude, longitude, radius } = req.body;
-    
-    const user = await User.findOne({ badgeID });
 
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+exports.startDutyFromNFC = async(req, res) => {
+    try {
+        const { badgeID } = req.params;
+        const { latitude, longitude, radius } = req.body;
+
+        const user = await User.findOne({ badgeID });
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        const session = await Session.findOne({
+            sessionDate: { $gte: new Date() },
+            latitude: latitude,
+            longitude: longitude,
+        });
+
+        if (!session) {
+            return res.status(404).json({ error: 'Session not found for user at the given location' });
+        }
+
+        const sessionToUpdate = user.sessions.find(s => s.session.sessionID === session.sessionID);
+        if (sessionToUpdate) {
+            sessionToUpdate.dutyStarted = true;
+            sessionToUpdate.dutyStartTime = new Date();
+            sessionToUpdate.radius = radius;
+            await user.save();
+        }
+        res.json({ message: 'Duty started and session information updated' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Server error' });
     }
-
-    const session = await Session.findOne({
-      sessionDate: { $gte: new Date() }, 
-      latitude: latitude,
-      longitude: longitude,
-    });
-
-    if (!session) {
-      return res.status(404).json({ error: 'Session not found for user at the given location' });
-    }
-    
-    const sessionToUpdate = user.sessions.find(s => s.session.sessionID === session.sessionID);
-    if (sessionToUpdate) {
-      sessionToUpdate.dutyStarted = true;
-      sessionToUpdate.dutyStartTime = new Date();
-      sessionToUpdate.radius = radius; 
-      await user.save();
-    }
-    res.json({ message: 'Duty started and session information updated' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
-  }
 };
 
 
-exports.endDuty = async (req, res) => {
-  try {
-    const { badgeId } = req.params;
+exports.endDuty = async(req, res) => {
+    try {
+        const { badgeId } = req.params;
 
-    const user = await User.findOne({ badgeID: badgeId });
+        const user = await User.findOne({ badgeID: badgeId });
 
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        const sessionToUpdate = user.sessions.find(s => s.dutyStarted && !s.dutyEnded);
+
+        if (!sessionToUpdate) {
+            return res.status(404).json({ error: 'No active duty session found' });
+        }
+
+        sessionToUpdate.dutyEnded = true;
+        sessionToUpdate.dutyEndTime = new Date();
+
+        await user.save();
+
+        res.json({ message: 'Duty ended successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Server error' });
     }
-
-    const sessionToUpdate = user.sessions.find(s => s.dutyStarted && !s.dutyEnded);
-
-    if (!sessionToUpdate) {
-      return res.status(404).json({ error: 'No active duty session found' });
-    }
-
-    sessionToUpdate.dutyEnded = true;
-    sessionToUpdate.dutyEndTime = new Date();
-
-    await user.save();
-
-    res.json({ message: 'Duty ended successfully' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
-  }
 };
