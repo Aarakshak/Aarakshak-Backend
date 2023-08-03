@@ -83,7 +83,11 @@ const userSchema = new Schema({
     },
     dutyEndTime: {
       type: Date,
-    }
+    },
+    radius: {
+      type: Number,
+      default: 0, 
+    },
   }],
   issues: [{
     issue: {

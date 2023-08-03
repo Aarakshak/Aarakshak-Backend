@@ -521,33 +521,64 @@ exports.checkInCheckpoint = async(req, res) => {
   }
 };
 
-exports.updateSessionRadiusFromNFC = async (req, res) => {
+exports.startDutyFromNFC = async (req, res) => {
   try {
     const {badgeID} = req.params;
     const { latitude, longitude, radius } = req.body;
-
-    // Find the user by badgeID
+    
     const user = await User.findOne({ badgeID });
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Find the session assigned to the user based on matching latitude and longitude
     const session = await Session.findOne({
-      locationLatitude: latitude,
-      locationLongitude: longitude
+      sessionDate: { $gte: new Date() }, 
+      latitude: latitude,
+      longitude: longitude,
     });
 
     if (!session) {
-      return res.status(404).json({ error: 'Session not found for user' });
+      return res.status(404).json({ error: 'Session not found for user at the given location' });
     }
 
-    // Update the session's radius
-    session.locationRadius = radius;
-    await session.save();
+    const sessionToUpdate = user.sessions.find(s => s.session.sessionID === session.sessionID);
+    if (sessionToUpdate) {
+      sessionToUpdate.dutyStarted = true;
+      sessionToUpdate.dutyStartTime = new Date();
+      sessionToUpdate.radius = radius; 
+      await user.save();
+    }
+    res.json({ message: 'Duty started and session information updated' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
 
-    res.json({ message: 'Session radius updated successfully' });
+
+exports.endDuty = async (req, res) => {
+  try {
+    const { badgeId } = req.params;
+
+    const user = await User.findOne({ badgeID: badgeId });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const sessionToUpdate = user.sessions.find(s => s.dutyStarted && !s.dutyEnded);
+
+    if (!sessionToUpdate) {
+      return res.status(404).json({ error: 'No active duty session found' });
+    }
+
+    sessionToUpdate.dutyEnded = true;
+    sessionToUpdate.dutyEndTime = new Date();
+
+    await user.save();
+
+    res.json({ message: 'Duty ended successfully' });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
