@@ -4,8 +4,8 @@ const dotenv = require('dotenv');
 
 const cors = require('cors');
 const corsOptions ={
-    origin:'https://violet-kitten-toga.cyclic.cloud', 
-    credentials:true,            //access-control-allow-credentials:true
+    origin:'http://localhost:3000', 
+    credentials:true,            
     optionSuccessStatus:200
 }
 
@@ -45,4 +45,3 @@ mongoose.connect(process.env.MONGO_URL, {
     .catch((error) => {
         console.error('MongoDB connection error:', error);
 });
-
