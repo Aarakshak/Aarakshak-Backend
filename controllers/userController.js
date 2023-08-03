@@ -465,21 +465,56 @@ function checkWithinThreshold(user, session, threshold) {
     }
 }
 exports.createpdf = async(req, res) => {
-    handlebars.registerHelper("formatDate", function(dateString) {
-        const date = new Date(dateString);
-        return date.toDateString();
-    });
-
-    handlebars.registerHelper("formatTime", function(dateString) {
-        const date = new Date(dateString);
-        return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-    });
 
     const { badgeID } = req.params
     const user = await User.findOne({ badgeID: badgeID })
     if (!user) {
         return res.status(400).json({ error: 'User not found' })
     }
+    user.sessions.forEach((session) => {
+        if (session && session.checkpoints && Array.isArray(session.checkpoints)) {
+            session.totalCheckpoints = session.checkpoints.length;
+        }
+    });
+    const previousSessions = await Promise.all(
+        user.sessions.map(async({ session, attended }) => {
+            const sessionID = session;
+            const sessionInfo = await Session.findById(sessionID);
+
+            if (!sessionInfo) {
+                return null;
+            }
+
+            const { sessionLocation, sessionDate } = sessionInfo;
+            const formattedDate = sessionDate ? sessionDate.toISOString().split('T')[0] : null;
+            const day = sessionDate ? sessionDate.toLocaleDateString('en-US', { weekday: 'long' }) : null;
+
+            return {
+                location: sessionLocation,
+                date: formattedDate,
+                day: day,
+                attended,
+            };
+        })
+    );
+
+    const filteredPreviousSessions = previousSessions.filter(session => session !== null);
+
+    user.sessions.forEach((session) => {
+        if (session && session.totalCheckpoints) {
+            const sessionsAttended = session.attendedCheckpoints >= session.totalCheckpoints * 0.75;
+            session.attended = sessionsAttended;
+        }
+    });
+    await user.save();
+
+    const totalSessionsAlloted = user.sessions.length;
+    const totalSessionsAttended = user.sessions.filter(({ attended }) => attended).length;
+
+    const attendancePercentage = (totalSessionsAlloted > 0) ?
+        (totalSessionsAttended / totalSessionsAlloted) * 100 :
+        0;
+
     const data = {
 
         badgeID: user.badgeID,
@@ -488,17 +523,27 @@ exports.createpdf = async(req, res) => {
         rank: user.rank,
         pic: user.profilePic,
         gender: user.gender,
-        sessions: user.sessions,
-        attended: user.attended,
-        issues: user.issues,
         reportsTo: user.reportsTo,
+        attendancePercentage,
+        totalSessionsAttended,
+        totalSessionsAlloted,
+        previousSessions: filteredPreviousSessions,
 
     };
     res.json(({ data }))
     const options = {
         format: "A4",
         orientation: "portrait",
-        border: "10mm"
+        header: {
+            height: '0mm',
+        },
+        // footer: {
+        //     height: '20mm',
+        //     contents: {
+        //         default: '<img src="https://drive.google.com/file/d/1QCqSqLcVhhZc9Kfq45PHWf9MxgQjcV8O/view?usp=share_link" style="width:10%;height:15%;" alt="Image not found">'
+        //     }
+        // }
+
     };
     const template = handlebars.compile(html, {
         allowedProtoMethods: {
@@ -508,7 +553,7 @@ exports.createpdf = async(req, res) => {
     const document = {
         html: html,
         data: data,
-        path: "./output.pdf"
+        path: "./Report" + badgeID + ".pdf"
     };
     const result = await pdf.create(document, options);
     if (!result) {

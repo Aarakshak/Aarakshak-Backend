@@ -12,41 +12,35 @@
     <div class="userDetails" style="text-align: center;">
         <img src="https://truthultimate.com/wp-content/uploads/2021/09/Satyamev-Jayate-Logo.png" style="width:10%;height:15%;" alt="">
         <br>
-        <h1>Officer details</h1>
+        <h2>Officer details</h2>
     </div>
-    <h3>Officer# {{badgeID}}</h3>
-    <h3>Name: {{surname}}, {{firstName}}</h3>
-    <h3>Rank: {{rank}}</h3>
-    <h3>Gender: {{gender}}</h3>
-    <h3>Reports to:{{reportsTo}}</h3>
-    <div style="text-align: center;">
-        <h1>Sessions</h1>
-        {{#if sessions}}
+    <div class="primaryDetails">
+        <h4>Officer# {{badgeID}}</h4>
+        <h4>Name: {{surname}}, {{firstName}}</h4>
+        <h4>Rank: {{rank}}</h4>
+        <h4>Gender: {{gender}}</h4>
+        <h4>Reports to :{{reportsTo}}</h4>
+    </div>
+    <div class="performance">
+        <h2>Performance Record</h2>
+        <h4>Sessions Allotted: {{totalSessionsAlloted}}</h4>
+        <h4>Sessions Attended: {{totalSessionsAttended}}</h4>
+        <h4>Attendance: {{attendancePercentage}}%</h4>
+    </div>
+
+    <div class="sessionDetails">
+        <h2>Session History</h2>
+        {{#if previousSessions}}
         <div>
-            {{#each sessions}}
-            <h4>Session ID: {{this.session.sessionID}}</h4>
-            <p>Session Date: {{formatDate this.session.sessionDate}}</p>
-            <p>Start Time: {{formatTime this.session.startTime}}</p>
-            <p>End Time: {{formatTime this.session.endTime}}</p>
+            {{#each previousSessions}}
+            <h4>Location: {{this.location}}</h4>
+            <h4>Date: {{this.date}}</h4>
+            <h4>Day: {{this.day}}</h4>
+            <h4>Attended: {{this.attended}}</h4>
             {{/each}}
         </div>
         {{/if}}
     </div>
-
-    <script>
-        function formatDate(dateString) {
-            const date = new Date(dateString);
-            return date.toDateString();
-        }
-
-        function formatTime(dateString) {
-            const date = new Date(dateString);
-            return date.toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-        }
-    </script>
 </body>
 
 </html>
