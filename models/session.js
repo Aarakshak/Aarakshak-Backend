@@ -39,6 +39,9 @@ const sessionSchema = new Schema({
   }],
   description: {
     type: String,
+  },
+  radius : {
+    type: Number,
   }
 });
 

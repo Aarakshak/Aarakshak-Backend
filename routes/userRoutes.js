@@ -13,5 +13,11 @@ router.get('/:badgeID', userController.getProfileOfUserByBadgeID);
 router.get('/notifications/:badgeID', userController.getUserNotifications);
 router.patch('/notifications/:badgeID/:notificationID', userController.markNotificatonsReaded);
 router.post('/checkIn/:badgeID/:sessionID', userController.checkInCheckpoint);
+<<<<<<< HEAD
 router.get('/createPdf/:badgeID', userController.createpdf);
+=======
+router.post('/start-duty/:badgeID', userController.startDutyFromNFC);
+router.post('/end-duty/:badgeId', userController.endDuty);
+
+>>>>>>> ecb350afe4b1cdc5468a7fed6dc4002dd66618eb
 module.exports = router;

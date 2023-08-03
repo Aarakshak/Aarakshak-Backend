@@ -560,6 +560,7 @@ exports.createpdf = async(req, res) => {
     if (!result) {
         console.error(error);
     }
+<<<<<<< HEAD
     // if (result) {
     //     res.json({ mssg: "Done" })
     // }
@@ -617,3 +618,76 @@ exports.checkInCheckpoint = async(req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 };
+=======
+    
+    res.json({ message: 'Checkpoint checked in successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+exports.startDutyFromNFC = async (req, res) => {
+  try {
+    const {badgeID} = req.params;
+    const { latitude, longitude, radius } = req.body;
+    
+    const user = await User.findOne({ badgeID });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const session = await Session.findOne({
+      sessionDate: { $gte: new Date() }, 
+      latitude: latitude,
+      longitude: longitude,
+    });
+
+    if (!session) {
+      return res.status(404).json({ error: 'Session not found for user at the given location' });
+    }
+
+    const sessionToUpdate = user.sessions.find(s => s.session.sessionID === session.sessionID);
+    if (sessionToUpdate) {
+      sessionToUpdate.dutyStarted = true;
+      sessionToUpdate.dutyStartTime = new Date();
+      sessionToUpdate.radius = radius; 
+      await user.save();
+    }
+    res.json({ message: 'Duty started and session information updated' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+
+exports.endDuty = async (req, res) => {
+  try {
+    const { badgeId } = req.params;
+
+    const user = await User.findOne({ badgeID: badgeId });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const sessionToUpdate = user.sessions.find(s => s.dutyStarted && !s.dutyEnded);
+
+    if (!sessionToUpdate) {
+      return res.status(404).json({ error: 'No active duty session found' });
+    }
+
+    sessionToUpdate.dutyEnded = true;
+    sessionToUpdate.dutyEndTime = new Date();
+
+    await user.save();
+
+    res.json({ message: 'Duty ended successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+>>>>>>> ecb350afe4b1cdc5468a7fed6dc4002dd66618eb

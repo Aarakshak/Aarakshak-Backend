@@ -26,7 +26,7 @@ const userSchema = new Schema({
   },
   profilePic: {
     type: String,
-    required: 'Photo cannot be empty',
+    // required: 'Photo cannot be empty',
   },
   policeStationId: {
     type: Number, 
@@ -69,7 +69,25 @@ const userSchema = new Schema({
     },
     lastCheckpointLocation: {
       type: String,
-    }
+    },
+    dutyStarted: {
+      type: Boolean,
+      default: false,
+    },
+    dutyStartTime: {
+      type: Date,
+    },
+    dutyEnded: {
+      type: Boolean,
+      default: false,
+    },
+    dutyEndTime: {
+      type: Date,
+    },
+    radius: {
+      type: Number,
+      default: 0, 
+    },
   }],
   issues: [{
     issue: {
