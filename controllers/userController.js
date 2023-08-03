@@ -535,7 +535,8 @@ exports.createpdf = async(req, res) => {
         format: "A4",
         orientation: "portrait",
         header: {
-            height: '0mm',
+            height: '35mm',
+            contents: '<img src="https://truthultimate.com/wp-content/uploads/2021/09/Satyamev-Jayate-Logo.png" style="width:10%;height:15%;" alt="">'
         },
         // footer: {
         //     height: '20mm',

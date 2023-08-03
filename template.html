@@ -11,6 +11,7 @@
 <body>
     <div class="userDetails" style="text-align: center;">
         <img src="https://truthultimate.com/wp-content/uploads/2021/09/Satyamev-Jayate-Logo.png" style="width:10%;height:15%;" alt="">
+        <img src="https://drive.google.com/file/d/1QCqSqLcVhhZc9Kfq45PHWf9MxgQjcV8O/view?usp=share_link" style="width:10%;height:15%;" alt="Image not found">
         <br>
         <h2>Officer details</h2>
     </div>
@@ -21,14 +22,11 @@
         <h4>Gender: {{gender}}</h4>
         <h4>Reports to :{{reportsTo}}</h4>
     </div>
-    <div class="performance">
-        <h2>Performance Record</h2>
-        <h4>Sessions Allotted: {{totalSessionsAlloted}}</h4>
-        <h4>Sessions Attended: {{totalSessionsAttended}}</h4>
-        <h4>Attendance: {{attendancePercentage}}%</h4>
-    </div>
+    <h4>Sessions Allotted: {{totalSessionsAlloted}}</h4>
+    <h4>Sessions Attended: {{totalSessionsAttended}}</h4>
+    <h4>Attendance: {{attendancePercentage}}%</h4>
 
-    <div class="sessionDetails">
+    <div class="sessionDetails ">
         <h2>Session History</h2>
         {{#if previousSessions}}
         <div>
