@@ -236,6 +236,19 @@ exports.addSessionByAdmin = async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 };
+exports.getAllSessions = async(req, res) => {
+  const { adminId } = req.params;
+  const admin = await Admin.findOne({ adminId: adminId });
+  if (!admin) {
+      return res.status(404).json({ error: 'Admin not found' });
+  }
+  const sess = await Session.find({})
+  if (!sess) {
+      res.status(404).json({ error: "No sessions found" })
+  }
+
+  res.json({ sess })
+};
 
 exports.assignUsersToSession = async (req, res) => {
   try {
