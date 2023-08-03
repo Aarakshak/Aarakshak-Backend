@@ -560,7 +560,6 @@ exports.createpdf = async(req, res) => {
     if (!result) {
         console.error(error);
     }
-<<<<<<< HEAD
     // if (result) {
     //     res.json({ mssg: "Done" })
     // }
@@ -618,14 +617,7 @@ exports.checkInCheckpoint = async(req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 };
-=======
     
-    res.json({ message: 'Checkpoint checked in successfully' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
-  }
-};
 
 exports.startDutyFromNFC = async (req, res) => {
   try {
@@ -690,4 +682,3 @@ exports.endDuty = async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 };
->>>>>>> ecb350afe4b1cdc5468a7fed6dc4002dd66618eb
