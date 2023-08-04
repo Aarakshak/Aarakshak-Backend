@@ -63,7 +63,7 @@ exports.loginUser = async (req, res) => {
       
         admin = await admin.save();
   
-      res.json({ message: 'Login successfull', adminID: admin.adminId });
+      res.json({ message: 'Login successfull', adminID: admin.adminId , firstName: admin.firstName});
     }catch (error) {
       console.error(error);
       res.status(500).json({ error: 'Server error' });
