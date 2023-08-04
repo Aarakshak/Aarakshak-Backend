@@ -1,18 +1,53 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- <link rel="stylesheet" href="./tempstyles.css"> -->
-    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous" /> -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 0;
+        }
+        
+        .Header {
+            text-align: center;
+        }
+        
+        .userDetails {
+            text-align: center;
+        }
+        
+        .Logos {
+            width: 20vw;
+            height: 20vh;
+        }
+        
+        .primaryDetails {
+            margin-top: 20px;
+        }
+        
+        .sessionDetails {
+            margin: 2%;
+            width: 50vw;
+            height: 60vh;
+            display: flex;
+            border: 2px solid black;
+        }
+        
+        .Sessions {
+            width: 100%;
+        }
+    </style>
 </head>
 
 <body>
-    <div class="userDetails" style="text-align: center;">
-        <img src="https://truthultimate.com/wp-content/uploads/2021/09/Satyamev-Jayate-Logo.png" style="width:10%;height:15%;" alt="">
-        <img src="https://drive.google.com/file/d/1QCqSqLcVhhZc9Kfq45PHWf9MxgQjcV8O/view?usp=share_link" style="width:10%;height:15%;" alt="Image not found">
+    <div class="Header" style="text-align: center;">
+        <img class="Logos" src="https://truthultimate.com/wp-content/uploads/2021/09/Satyamev-Jayate-Logo.png" alt="">
+        <img class="Logos" src="https://res.cloudinary.com/thapar-institutes/image/upload/v1691128355/Horizontal_ibbyah.png" alt="">
         <br>
+    </div>
+    <div class="Header">
         <h2>Officer details</h2>
     </div>
     <div class="primaryDetails">
@@ -22,22 +57,189 @@
         <h4>Gender: {{gender}}</h4>
         <h4>Reports to :{{reportsTo}}</h4>
     </div>
-    <h4>Sessions Allotted: {{totalSessionsAlloted}}</h4>
-    <h4>Sessions Attended: {{totalSessionsAttended}}</h4>
-    <h4>Attendance: {{attendancePercentage}}%</h4>
-
-    <div class="sessionDetails ">
+    <div class="performance">
+        <h4>Sessions Allotted: {{totalSessionsAlloted}}</h4>
+        <h4>Sessions Attended: {{totalSessionsAttended}}</h4>
+        <h4>Attendance: {{attendancePercentage}}%</h4>
+    </div>
+    <div class="Header">
         <h2>Session History</h2>
-        {{#if previousSessions}}
-        <div>
-            {{#each previousSessions}}
+    </div>
+    <div class="Sessions">
+        {{#if previousSessions}} {{#each previousSessions}}
+        <div class="sessionDetails">
             <h4>Location: {{this.location}}</h4>
             <h4>Date: {{this.date}}</h4>
             <h4>Day: {{this.day}}</h4>
             <h4>Attended: {{this.attended}}</h4>
-            {{/each}}
         </div>
-        {{/if}}
+        {{/each}} {{/if}}
+    </div>
+</body>
+
+</html> -->
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            width: 15.3cm;
+            min-height: 21.7cm;
+            border: #333 2px solid;
+        }
+        /* .Pdfbody {
+            display: flex;
+            flex-direction: column;
+        } */
+        
+        .header {
+            /* background-color: #04367C; */
+            text-align: center;
+        }
+        
+        .logos {
+            background-color: none;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .logo {
+            width: 120px;
+            height: auto;
+        }
+        
+        .performance {
+            text-align: center;
+        }
+        
+        .sessionDetails {
+            width: 46%;
+            border: 2px solid #333;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        /* .sessionDetails {
+    
+        } */
+        /* .user {
+            display: flex;
+            flex-direction: row;
+        }
+        
+        .userDetails {
+            display: flex;
+            flex-direction: column;
+        } */
+        /* .performance {
+            display: flex;
+            flex-direction: column;
+        } */
+        
+        .box {
+            display: flex;
+            flex-direction: row;
+            width: 10cm;
+            height: 1.5cm;
+            border: 0.1cm black solid;
+        }
+        
+        .title {
+            width: 3cm;
+            height: 1cm;
+        }
+        
+        .content {
+            width: 2cm;
+            height: 1cm;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="Pdfbody">
+        <div class="header">
+            <div class="logos">
+                <img class="logo" src="https://truthultimate.com/wp-content/uploads/2021/09/Satyamev-Jayate-Logo.png" alt="">
+                <img class="logo" src="https://res.cloudinary.com/thapar-institutes/image/upload/v1691128355/Horizontal_ibbyah.png" alt="">
+            </div>
+            <h2>Officer Details</h2>
+        </div>
+        <div class="user">
+            <div class="userDetails">
+                <div class="box">
+                    <div class="title">
+                        <h4>Officer# </h4>
+                    </div>
+                    <div class="content">
+                        <h4>{{badgeID}}</h4>
+                    </div>
+                </div>
+                <div class="box">
+                    <div class="title">
+                        <h4>Officer Name</h4>
+                    </div>
+                    <div class="content">
+                        <h4>{{surname}}, {{firstName}}</h4>
+                    </div>
+                </div>
+                <div class="box">
+                    <div class="title">
+                        <h4>Rank</h4>
+                    </div>
+                    <div class="content">
+                        <h4>{{rank}}</h4>
+                    </div>
+                </div>
+                <div class="box">
+                    <div class="title">
+                        <h4>Police Station</h4>
+                    </div>
+                    <div class="content">
+                        <h4>{{policeStationId}}</h4>
+                    </div>
+                </div>
+                <div class="box">
+                    <div class="title">
+                        <h4>Reports to</h4>
+                    </div>
+                    <div class="content">
+                        <h4>{{reportsTo}}</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="performance">
+                <div class="title">
+                    <img src="https://www.google.com/url?sa=i&url=https%3A%2F%2Fdepositphotos.com%2Fstock-photos%2Fpoliceman.html&psig=AOvVaw2ZWoC7gCK1Xjt06PvZOkGJ&ust=1691248190535000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCJCr7dOkw4ADFQAAAAAdAAAAABAD" alt="">
+                </div>
+                <div class="title">
+                    <h4>Sessions Allotted: {{totalSessionsAlloted}}</h4>
+                </div>
+                <div class="title">
+                    <h4>Sessions Attended: {{totalSessionsAttended}}</h4>
+                </div>
+                <div class="title">
+                    <h4>Attendance: {{attendancePercentage}}%</h4>
+                </div>
+            </div>
+        </div>
+        <div class="header">
+            <h2>Session History</h2>
+        </div>
+        <div class="sessions">
+            {{#if previousSessions}} {{#each previousSessions}}
+            <div class="sessionDetails">
+                <h4>Location: {{this.location}}</h4>
+                <h4>Date: {{this.date}}</h4>
+                <h4>Day: {{this.day}}</h4>
+                <h4>Attended: {{this.attended}}</h4>
+            </div>
+            {{/each}} {{/if}}
+        </div>
     </div>
 </body>
 

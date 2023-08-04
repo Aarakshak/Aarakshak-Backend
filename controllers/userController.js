@@ -1,5 +1,6 @@
 const User = require('../models/schema');
 const Session = require('../models/session')
+const Admin = require('../models/adminModel');
 const pdf = require("pdf-creator-node");
 const fs = require("fs");
 const handlebars = require("handlebars");
@@ -526,6 +527,9 @@ exports.createpdf = async(req, res) => {
     const attendancePercentage = (totalSessionsAlloted > 0) ?
         (totalSessionsAttended / totalSessionsAlloted) * 100 :
         0;
+    const reportsToAdminId = user.reportsTo;
+    const admin = await Admin.findOne({ adminId: reportsToAdminId });
+    const adminName = admin ? admin.firstName : 'N/A';
 
     const data = {
 
@@ -536,6 +540,8 @@ exports.createpdf = async(req, res) => {
         pic: user.profilePic,
         gender: user.gender,
         reportsTo: user.reportsTo,
+        policeStationId: user.policeStationId,
+        adminName,
         attendancePercentage,
         totalSessionsAttended,
         totalSessionsAlloted,
@@ -549,12 +555,6 @@ exports.createpdf = async(req, res) => {
         header: {
             height: '0mm',
         },
-        // footer: {
-        //     height: '20mm',
-        //     contents: {
-        //         default: '<img src="https://drive.google.com/file/d/1QCqSqLcVhhZc9Kfq45PHWf9MxgQjcV8O/view?usp=share_link" style="width:10%;height:15%;" alt="Image not found">'
-        //     }
-        // }
 
     };
     const template = handlebars.compile(html, {
@@ -572,14 +572,10 @@ exports.createpdf = async(req, res) => {
     if (!result) {
         console.error(error);
     }
-    // if (result) {
-    //     res.json({ mssg: "Done" })
-    // }
 
     convertPDFToBytes(path)
         .then(pdfBytes => {
             console.log('PDF converted to bytes:', pdfBytes);
-            // Now you can use `pdfBytes` as needed
         })
         .catch(error => {
             console.error('Error:', error);
