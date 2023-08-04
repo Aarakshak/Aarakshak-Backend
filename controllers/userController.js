@@ -178,7 +178,7 @@ exports.getCurrentSession = async(req, res) => {
         });
 
         if (!currentSession) {
-            return res.status(404).json({ error: 'No current session found' });
+            return res.status(201).json({ error: 'No current session found' });
         }
 
         const { sessionLocation, startTime, endTime, checkpoints } = currentSession.session;
@@ -354,7 +354,7 @@ exports.getUpcomingSession = async(req, res) => {
             });
         }
         const response = {
-            name: `${firstName} ${surname}`,
+            name: `${user.firstName} ${user.surname}`,
             rank: user.rank,
             upcomingSessions: upcomingSessions.map(({ session }) => ({
 
