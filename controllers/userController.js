@@ -658,7 +658,7 @@ exports.startDutyFromNFC = async(req, res) => {
         });
 
         if (!session) {
-            return res.status(404).json({ error: 'Session not found for user at the given location' });
+            return res.status(250).json({ error: 'Session not found for user at the given location' });
         }
 
         const sessionToUpdate = user.sessions.find(s => s.session.sessionID === session.sessionID);

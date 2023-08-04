@@ -19,7 +19,6 @@ const { User } = require('./server');
 console.log("Received schema");
 (async() => {
     try {
-        // Insert lookup code
         const users = await User.find({ badgeID: 10000, }).lean();
 
         const data = {

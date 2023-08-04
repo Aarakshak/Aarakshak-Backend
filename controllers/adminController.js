@@ -355,9 +355,11 @@ exports.resolveIssue = async (req, res) => {
     if (!issue) {
       return res.status(404).json({ error: 'Issue not found' });
     }
-    console.log('Issue:', issue);
-    issue.resolved = true;
+    issue.issue.resolved = true; // Mark the resolved field as true
+    issue.pertaining = false;    // Assuming you also want to set pertaining to false
+    
     await user.save();
+    // await user.save();
     res.json({ message: 'Issue resolved successfully' });
   } catch (error) {
     console.error(error);

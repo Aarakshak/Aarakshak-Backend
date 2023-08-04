@@ -11,7 +11,7 @@ router.post('/add-session/:adminId', adminController.addSessionByAdmin);
 router.get('/:adminId/sessions', adminController.getSessionsByAdmin);
 router.post('/assign-session/:adminId', adminController.assignUsersToSession);
 router.get('/sos/:adminId', adminController.getAllIssues);
-router.post('/resolve-sos/:adminId/:badgeID/:issueID', adminController.resolveIssue);
+router.patch('/resolve-sos/:adminId/:badgeID/:issueID', adminController.resolveIssue);
 router.post('/notif/:adminId', adminController.addUserNotification);
 router.get('/surveillance/:adminId', adminController.getUpcomingSessionsForSurviellance);
 router.get('/get-sessions/:adminId', adminController.getAllSessions);
