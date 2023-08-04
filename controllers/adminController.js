@@ -438,12 +438,21 @@ exports.getUpcomingSessionsForSurviellance = async(req, res) => {
       return session.sessionDate.toISOString().split('T')[0] === date && session.sessionDate <= currentDate;
     }));
     const userInfo = users.map(user => {
+      const lastSession = user.sessions[user.sessions.length - 1];
+      const lastAttendedCheck = lastSession ? lastSession.attendedCheckpoints || 0 : 0;
+      const lastSessionInfo = lastSession ? lastSession.session : null;
       return {
+        badgeID: user.badgeID,
         name: `${user.firstName} ${user.surname}`,
         mobileNo: user.phoneNo,
         emailId: user.emailId,
         photo: user.profilePic,
-        lastAttendedCheck: user.sessions[user.sessions.length - 1]?.attendedCheckpoints || 0,
+        lastAttendedCheck,
+        sessionLocation: lastSessionInfo ? lastSessionInfo.sessionLocation : null,
+        sessionDate: lastSessionInfo ? lastSessionInfo.sessionDate : null,
+        sessionTime: lastSessionInfo ? lastSessionInfo.startTime : null,
+        firstCheckIn: lastSession ? lastSession.firstCheckIn || null : null,
+        endTime: lastSessionInfo ? lastSessionInfo.endTime : null,
       };
     });
     res.json({

@@ -18,5 +18,10 @@ proposed idea 5->USERS) -> HEAD(INSPECTOR) -> ADMIN // POLICEID-CHECK
 11) survelience page // return sessions // checkpoint  --> done
 12) password change for user in app
 
+session location,
+sessionDate,
+sessionTIme,
+endTime,
+sosRaised
 // only current session -> userscreen, getuserByscreen
 // get request for face authentication, prustagi_be20@thapar.edu
