@@ -228,7 +228,7 @@ exports.createIssue = async(req, res) => {
                 title: title,
                 issueText: issueText,
                 raised: new Date(),
-                resolved: null,
+                resolved: false,
             },
             pertaining: true,
         };

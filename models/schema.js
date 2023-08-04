@@ -113,7 +113,8 @@ const userSchema = new Schema({
         required: 'Enter raised date',
       },
       resolved: {
-       type: Date,
+       type: Boolean,
+       default: false
       },
       latitude:{
         type : Number,

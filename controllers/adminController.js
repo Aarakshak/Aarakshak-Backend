@@ -343,6 +343,28 @@ exports.getAllIssues = async (req, res) => {
   } 
 };
 
+exports.resolveIssue = async (req, res) => {
+  try {
+    const { adminId, badgeID, issueID } = req.params;
+    const user = await User.findOne({ badgeID });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    console.log('User:', user);
+    const issue = user.issues.find(issueObj => issueObj.issue.issueID === parseInt(issueID));
+    if (!issue) {
+      return res.status(404).json({ error: 'Issue not found' });
+    }
+    console.log('Issue:', issue);
+    issue.resolved = true;
+    await user.save();
+    res.json({ message: 'Issue resolved successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
 async function generateNewNotificationId(badgeID) {
   try {
     const user = await User.findOne({ badgeID: badgeID }).sort({ 'notifications.notificationID': -1 });
