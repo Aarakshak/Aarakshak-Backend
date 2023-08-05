@@ -387,7 +387,6 @@ exports.addUserNotification = async (req, res) => {
     const { badgeID, title, type, message } = req.body;
 
     if (badgeID >= 20000 && badgeID <= 30000) {
-      // Send notifications to all users with the given policeStationId (badgeID)
       const usersWithPoliceStationId = await User.find({ policeStationId: badgeID });
 
       if (usersWithPoliceStationId.length === 0) {
@@ -467,7 +466,7 @@ exports.getUpcomingSessionsForSurviellance = async(req, res) => {
       }
       return false;
     }));
-    
+
     const userInfo = users.map(user => {
       const lastSession = user.sessions[user.sessions.length - 1];
       const lastAttendedCheck = lastSession ? lastSession.attendedCheckpoints || 0 : 0;
