@@ -14,6 +14,6 @@ router.get('/sos/:adminId', adminController.getAllIssues);
 router.patch('/resolve-sos/:adminId/:badgeID/:issueID', adminController.resolveIssue);
 router.post('/notif/:adminId', adminController.addUserNotification);
 router.get('/surveillance/:adminId', adminController.getUpcomingSessionsForSurviellance);
-router.get('/get-sessions/:adminId', adminController.getAllSessions);
-// router.post('/create-admin', adminController.createAdmin);
+router.get('/get-sessions/:adminId', adminController.getAllSessions)
+    // router.post('/create-admin', adminController.createAdmin);
 module.exports = router;
