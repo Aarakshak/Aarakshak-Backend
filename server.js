@@ -22,7 +22,7 @@ const adminRoutes = require('./routes/adminRoutes')
 const app = express();
 
 app.use(cors(corsOptions));
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '10mb' }));
 app.use(morgan('dev'));
 
 app.use('/v1/user', userRoutes);
@@ -45,4 +45,3 @@ mongoose.connect(process.env.MONGO_URL, {
     .catch((error) => {
         console.error('MongoDB connection error:', error);
 });
-643714
