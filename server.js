@@ -23,7 +23,7 @@ const adminRoutes = require('./routes/adminRoutes')
 const app = express();
 
 app.use(cors(corsOptions));
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '10mb' }));
 app.use(morgan('dev'));
 
 app.use('/v1/user', userRoutes);
