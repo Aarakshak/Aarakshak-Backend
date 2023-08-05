@@ -455,12 +455,19 @@ exports.getUpcomingSessionsForSurviellance = async(req, res) => {
     const date = req.query.date;
 
     const upcomingSessions = users.flatMap(user => user.sessions.filter(session => {
-      return session.sessionDate.toISOString().split('T')[0] === date && session.sessionDate >currentDate;
-    }))
-
-    const currentSessions = users.flatMap(user => user.sessions.filter(session => {
-      return session.sessionDate.toISOString().split('T')[0] === date && session.sessionDate <= currentDate;
+      if (session.sessionDate && session.sessionDate instanceof Date) {
+        return session.sessionDate.toISOString().split('T')[0] === date && session.sessionDate > currentDate;
+      }
+      return false;
     }));
+    
+    const currentSessions = users.flatMap(user => user.sessions.filter(session => {
+      if (session.sessionDate && session.sessionDate instanceof Date) {
+        return session.sessionDate.toISOString().split('T')[0] === date && session.sessionDate <= currentDate;
+      }
+      return false;
+    }));
+    
     const userInfo = users.map(user => {
       const lastSession = user.sessions[user.sessions.length - 1];
       const lastAttendedCheck = lastSession ? lastSession.attendedCheckpoints || 0 : 0;
