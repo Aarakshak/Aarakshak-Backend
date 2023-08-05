@@ -3,10 +3,10 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 
 const cors = require('cors');
-const corsOptions ={
-    origin:'http://localhost:3000', 
-    credentials:true,            
-    optionSuccessStatus:200
+const corsOptions = {
+    origin: 'http://localhost:3000',
+    credentials: true,
+    optionSuccessStatus: 200
 }
 
 
@@ -15,6 +15,7 @@ dotenv.config()
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const notFoundMiddleware = require('./middleware/not-found');
+// const crossOriginMiddleware = require('./middleware/crossOrigin');
 
 const userRoutes = require('./routes/userRoutes');
 const adminRoutes = require('./routes/adminRoutes')
@@ -31,6 +32,14 @@ app.use('/v1/admin', adminRoutes);
 
 app.use(notFoundMiddleware)
 
+// Cross Origin middleware
+app.use((req, res, next) => {
+    res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000/");
+    res.setHeader("Access-Control-Allow-Methods", "POST, GET, PUT");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    next();
+})
+
 const port = 8000;
 mongoose.connect(process.env.MONGO_URL, {
         useNewUrlParser: true,
@@ -44,5 +53,4 @@ mongoose.connect(process.env.MONGO_URL, {
     })
     .catch((error) => {
         console.error('MongoDB connection error:', error);
-});
-643714
+    });

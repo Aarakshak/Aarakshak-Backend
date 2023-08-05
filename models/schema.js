@@ -26,7 +26,7 @@ const userSchema = new Schema({
     },
     profilePic: {
         type: String,
-        // required: 'Photo cannot be empty',
+        required: 'Photo cannot be empty',
     },
     policeStationId: {
         type: Number,
