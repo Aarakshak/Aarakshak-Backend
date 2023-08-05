@@ -219,7 +219,7 @@ exports.createIssue = async(req, res) => {
         const issueID = lastIssue ? lastIssue.issue.issueID + 1 : 1;
 
 
-        const { title, issueText } = req.body;
+        const { title, issueText, latitude, longitude } = req.body;
 
         const issue = {
             issue: {
@@ -229,8 +229,9 @@ exports.createIssue = async(req, res) => {
                 issueText: issueText,
                 raised: new Date(),
                 resolved: false,
+                latitude: latitude,
+                longitude: longitude
             },
-            pertaining: true,
         };
         user.issues.push(issue);
 

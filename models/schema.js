@@ -118,11 +118,11 @@ const userSchema = new Schema({
             },
             latitude: {
                 type: Number,
-                required: true
+                // required: "Lat Required"
             },
             longitude: {
                 type: Number,
-                required: true
+                // required: "Long Required"
             }
         },
     }],
