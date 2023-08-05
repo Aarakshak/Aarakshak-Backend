@@ -506,7 +506,19 @@ exports.getUpcomingSessionsForSurviellance = async(req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 }
-
+exports.getUsersUnderAdmin = async(req, res) => {
+    const { adminId } = req.params;
+    const admin = await Admin.findOne({ adminId: adminId });
+    if (!admin) {
+        return res.status(404).json({ error: 'Admin not found' });
+    }
+    const users = await User.find({ reportsTo: adminId });
+    if (users.length > 0) {
+        return res.status(200).json({ users });
+    } else {
+        return res.status(404).json({ error: 'No users found under this admin' });
+    }
+}
 exports.createAdmin = async(req, res) => {
     try {
         const { adminId, firstName, emailId, password, designation } = req.body;
