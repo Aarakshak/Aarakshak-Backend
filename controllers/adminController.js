@@ -189,13 +189,15 @@ exports.deleteUser = async (req, res) => {
 
 function generateCheckPoints(startTime, endTime, numCheckPoints){
   const randomCheckpoints = [];
+  randomCheckpoints.push({timestamp: startTime});
   const startTimeStamp = new Date(startTime).getTime();
   const endTimeStamp = new Date(endTime).getTime();
   const interval = (endTimeStamp - startTimeStamp)/numCheckPoints;
 
-  for(let i = 0; i<numCheckPoints; i++)
+  for(let i = 1; i<numCheckPoints; i++)
   {
-    const randomTime = startTimeStamp + i * interval + Math.random() * interval;
+    const percentage = i / (numCheckPoints - 1);
+    const randomTime = startTimeStamp + percentage * (endTimeStamp - startTimeStamp);
     randomCheckpoints.push({ timestamp: new Date(randomTime) });
   }
   return randomCheckpoints;

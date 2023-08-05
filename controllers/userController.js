@@ -550,12 +550,7 @@ exports.createpdf = async(req, res) => {
         header: {
             height: '0mm',
         },
-        // footer: {
-        //     height: '20mm',
-        //     contents: {
-        //         default: '<img src="https://drive.google.com/file/d/1QCqSqLcVhhZc9Kfq45PHWf9MxgQjcV8O/view?usp=share_link" style="width:10%;height:15%;" alt="Image not found">'
-        //     }
-        // }
+        
 
     };
     const template = handlebars.compile(html, {
@@ -573,10 +568,6 @@ exports.createpdf = async(req, res) => {
     if (!result) {
         console.error(error);
     }
-    // if (result) {
-    //     res.json({ mssg: "Done" })
-    // }
-
     convertPDFToBytes(path)
         .then(pdfBytes => {
             console.log('PDF converted to bytes:', pdfBytes);
