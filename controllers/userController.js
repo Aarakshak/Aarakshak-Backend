@@ -9,7 +9,7 @@ dotenv.config()
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const secretKey = crypto.randomBytes(64).toString('hex');
-
+const mongoose = require('mongoose')
 const nodemailer = require('nodemailer');
 
 const formatTime = (time) => {
@@ -577,6 +577,7 @@ exports.createpdf = async(req, res) => {
             console.error('Error:', error);
         });
 }
+
 exports.checkInCheckpoint = async(req, res) => {
     try {
         const { badgeID, sessionID } = req.params;
@@ -652,8 +653,12 @@ exports.startDutyFromNFC = async(req, res) => {
         if (!session) {
             return res.status(250).json({ error: 'Session not found for user at the given location' });
         }
+        console.log('User Sessions:', user.sessions);
+        console.log('Session ID:', session.sessionID);
 
-        const sessionToUpdate = user.sessions.find(s => s.session.sessionID === session.sessionID);
+        let sessionToUpdate = user.sessions.find(s => s.session.equals(session._id));
+        
+        console.log('Session to Update:', sessionToUpdate);
         if (sessionToUpdate) {
             sessionToUpdate.dutyStarted = true;
             sessionToUpdate.dutyStartTime = new Date();

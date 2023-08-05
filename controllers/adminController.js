@@ -456,7 +456,6 @@ exports.getUpcomingSessionsForSurviellance = async(req, res) => {
             return res.status(404).json({ error: 'Admin not found' });
         }
 
-
         const users = await User.find({ policeStationId: { $in: admin.policeStation.map(ps => ps.policeStationId) } });
 
         const currentDate = new Date();
@@ -464,12 +463,21 @@ exports.getUpcomingSessionsForSurviellance = async(req, res) => {
         const date = req.query.date;
 
         const upcomingSessions = users.flatMap(user => user.sessions.filter(session => {
-            return session.sessionDate.toISOString().split('T')[0] === date && session.sessionDate > currentDate;
-        }))
-
-        const currentSessions = users.flatMap(user => user.sessions.filter(session => {
-            return session.sessionDate.toISOString().split('T')[0] === date && session.sessionDate <= currentDate;
+            if (session.sessionDate && session.sessionDate instanceof Date) {
+                const sessionDateISO = session.sessionDate.toISOString();
+                return sessionDateISO.split('T')[0] === date && session.sessionDate > currentDate;
+            }
+            return false; // Return false if sessionDate is not valid
         }));
+        
+        const currentSessions = users.flatMap(user => user.sessions.filter(session => {
+            if (session.sessionDate && session.sessionDate instanceof Date) {
+                const sessionDateISO = session.sessionDate.toISOString();
+                return sessionDateISO.split('T')[0] === date && session.sessionDate <= currentDate;
+            }
+            return false; // Return false if sessionDate is not valid
+        }));
+        
         const userInfo = users.map(user => {
             const lastSession = user.sessions[user.sessions.length - 1];
             const lastAttendedCheck = lastSession ? lastSession.attendedCheckpoints || 0 : 0;
@@ -484,7 +492,7 @@ exports.getUpcomingSessionsForSurviellance = async(req, res) => {
                 sessionLocation: lastSessionInfo ? lastSessionInfo.sessionLocation : null,
                 sessionDate: lastSessionInfo ? lastSessionInfo.sessionDate : null,
                 sessionTime: lastSessionInfo ? lastSessionInfo.startTime : null,
-                firstCheckIn: lastSession ? lastSession.firstCheckIn || null : null,
+                firstCheckIn: lastSession ? lastSession.dutyStartTime || null : null,
                 endTime: lastSessionInfo ? lastSessionInfo.endTime : null,
             };
         });
