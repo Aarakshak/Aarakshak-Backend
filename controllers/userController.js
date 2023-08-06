@@ -289,6 +289,7 @@ exports.createIssue = async(req, res) => {
             issue: {
                 badgeID: user.badgeID,
                 profilePic: user.profilePic,
+                name: user.firstName,
                 issueID: issueID,
                 title: title,
                 issueText: issueText,

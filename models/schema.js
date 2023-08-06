@@ -106,6 +106,10 @@ const userSchema = new Schema({
                 type: String,
                 ref: 'User'
             },
+            name : {
+                type: String,
+                ref: 'User'
+            },
             issueID: {
                 type: Number,
                 required: 'ID cannot be empty',
