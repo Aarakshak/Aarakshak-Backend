@@ -174,16 +174,17 @@ exports.getCurrentSession = async(req, res) => {
         const currentDate = new Date().toISOString().split('T')[0];
 
         const currentSession = user.sessions.find(({ session }) => {
-            return session.sessionDate.toISOString().split('T')[0] === currentDate;
+            return session && session.sessionDate.toISOString().split('T')[0] === currentDate;
         });
 
         if (!currentSession) {
             return res.status(201).json({ error: 'No current session found' });
         }
 
-        const { sessionLocation, startTime, endTime, checkpoints } = currentSession.session;
+        const { sessionID, sessionLocation, startTime, endTime, checkpoints } = currentSession.session;
 
         const response = {
+            sessionId: sessionID,
             location1: sessionLocation,
             reportingTo: user.reportsTo,
             checkInTime: startTime,
@@ -578,10 +579,63 @@ exports.createpdf = async(req, res) => {
         });
 }
 
+// exports.checkInCheckpoint = async(req, res) => {
+//     try {
+//         const { badgeID, sessionID } = req.params;
+//         const { timestamp, location } = req.body;
+
+//         const user = await User.findOne({ badgeID: badgeID });
+
+//         if (!user) {
+//             return res.status(404).json({ error: 'User not found' });
+//         }
+
+//         const session = await Session.findOne({ sessionID: sessionID });
+//         if (!session) {
+//             return res.status(404).json({ error: 'Session not found or wrong session logged In' });
+//         }
+
+//         const currentTime = Date.now();
+//         const tenMinutesAgo = currentTime - 10 * 60 * 1000;
+//         if (timestamp < tenMinutesAgo || timestamp > currentTime) {
+//             return res.status(400).json({ error: 'Invalid timestamp' });
+//         }
+
+//         const isWithinThreshold = checkWithinThreshold(user, session, 100);
+
+//         if (isWithinThreshold) {
+//             const checkpointIndex = user.sessions.findIndex((session) => session.session.equals(ObjectId(sessionID)));
+
+//             if (checkpointIndex !== -1) {
+//                 user.sessions[checkpointIndex].attendedCheckpoints += 1;
+//                 user.sessions[checkpointIndex].totalCheckpoints += 1;
+//                 user.sessions[checkpointIndex].lastAttended = true;
+//                 user.sessions[checkpointIndex].lastCheckpointTimestamp = timestamp;
+//                 user.sessions[checkpointIndex].lastCheckpointLocation = location;
+//                 await user.save();
+//             }
+//         } else {
+//             const checkpointIndex = user.sessions.findIndex((session) => session.session.equals(ObjectId(sessionID)));
+
+//             if (checkpointIndex !== -1) {
+//                 user.sessions[checkpointIndex].totalCheckpoints += 1;
+//                 user.sessions[checkpointIndex].lastAttended = false;
+//                 user.sessions[checkpointIndex].lastCheckpointTimestamp = timestamp;
+//                 user.sessions[checkpointIndex].lastCheckpointLocation = location;
+//                 await user.save();
+//             }
+//         }
+
+//         res.json({ message: 'Checkpoint checked in successfully' });
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ error: 'Server error' });
+//     }
+// };
 exports.checkInCheckpoint = async(req, res) => {
     try {
         const { badgeID, sessionID } = req.params;
-        const { timestamp, location } = req.body;
+        const { timestamp, location, isWithinCorrectLocation } = req.body;
 
         const user = await User.findOne({ badgeID: badgeID });
 
@@ -600,29 +654,19 @@ exports.checkInCheckpoint = async(req, res) => {
             return res.status(400).json({ error: 'Invalid timestamp' });
         }
 
-        const isWithinThreshold = checkWithinThreshold(user, session, 100);
+        if (!isWithinCorrectLocation) {
+            // Handle the case where the user is not within the correct location
+            return res.status(400).json({ error: 'User is not within correct location' });
+        }
 
-        if (isWithinThreshold) {
-            const checkpointIndex = user.sessions.findIndex((session) => session.session.equals(ObjectId(sessionID)));
+        const checkpointIndex = user.sessions.findIndex((session) => session.session.equals(ObjectId(sessionID)));
 
-            if (checkpointIndex !== -1) {
-                user.sessions[checkpointIndex].attendedCheckpoints += 1;
-                user.sessions[checkpointIndex].totalCheckpoints += 1;
-                user.sessions[checkpointIndex].lastAttended = true;
-                user.sessions[checkpointIndex].lastCheckpointTimestamp = timestamp;
-                user.sessions[checkpointIndex].lastCheckpointLocation = location;
-                await user.save();
-            }
-        } else {
-            const checkpointIndex = user.sessions.findIndex((session) => session.session.equals(ObjectId(sessionID)));
-
-            if (checkpointIndex !== -1) {
-                user.sessions[checkpointIndex].totalCheckpoints += 1;
-                user.sessions[checkpointIndex].lastAttended = false;
-                user.sessions[checkpointIndex].lastCheckpointTimestamp = timestamp;
-                user.sessions[checkpointIndex].lastCheckpointLocation = location;
-                await user.save();
-            }
+        if (checkpointIndex !== -1) {
+            user.sessions[checkpointIndex].totalCheckpoints += 1;
+            user.sessions[checkpointIndex].lastAttended = isWithinCorrectLocation;
+            user.sessions[checkpointIndex].lastCheckpointTimestamp = timestamp;
+            user.sessions[checkpointIndex].lastCheckpointLocation = location;
+            await user.save();
         }
 
         res.json({ message: 'Checkpoint checked in successfully' });
@@ -632,11 +676,10 @@ exports.checkInCheckpoint = async(req, res) => {
     }
 };
 
-
 exports.startDutyFromNFC = async(req, res) => {
     try {
         const { badgeID } = req.params;
-        const { latitude, longitude, radius } = req.body;
+        const { latitude, longitude, radius, isWithinCorrectLocation } = req.body;
 
         const user = await User.findOne({ badgeID });
 
@@ -653,24 +696,69 @@ exports.startDutyFromNFC = async(req, res) => {
         if (!session) {
             return res.status(250).json({ error: 'Session not found for user at the given location' });
         }
-        console.log('User Sessions:', user.sessions);
-        console.log('Session ID:', session.sessionID);
+
+        // console.log('User Sessions:', user.sessions);
+        // console.log('Session ID:', session.sessionID);
 
         let sessionToUpdate = user.sessions.find(s => s.session.equals(session._id));
         
         console.log('Session to Update:', sessionToUpdate);
-        if (sessionToUpdate) {
+        if (sessionToUpdate && isWithinCorrectLocation) {
             sessionToUpdate.dutyStarted = true;
             sessionToUpdate.dutyStartTime = new Date();
             sessionToUpdate.radius = radius;
             await user.save();
+            res.json({ message: 'Duty started and session information updated' });
+        } else if (!isWithinCorrectLocation) {
+            res.status(400).json({ error: 'User is not within correct location' });
+        } else {
+            res.status(500).json({ error: 'Server error' });
         }
-        res.json({ message: 'Duty started and session information updated' });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Server error' });
     }
 };
+
+
+// exports.startDutyFromNFC = async(req, res) => {
+//     try {
+//         const { badgeID } = req.params;
+//         const { latitude, longitude, radius } = req.body;
+
+//         const user = await User.findOne({ badgeID });
+
+//         if (!user) {
+//             return res.status(404).json({ error: 'User not found' });
+//         }
+
+//         const session = await Session.findOne({
+//             sessionDate: { $gte: new Date() },
+//             latitude: latitude,
+//             longitude: longitude,
+//         });
+
+//         if (!session) {
+//             return res.status(250).json({ error: 'Session not found for user at the given location' });
+//         }
+//         console.log('User Sessions:', user.sessions);
+//         console.log('Session ID:', session.sessionID);
+
+//         let sessionToUpdate = user.sessions.find(s => s.session.equals(session._id));
+        
+//         console.log('Session to Update:', sessionToUpdate);
+//         if (sessionToUpdate) {
+//             sessionToUpdate.dutyStarted = true;
+//             sessionToUpdate.dutyStartTime = new Date();
+//             sessionToUpdate.radius = radius;
+//             await user.save();
+//         }
+//         res.json({ message: 'Duty started and session information updated' });
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ error: 'Server error' });
+//     }
+// };
 
 
 exports.endDuty = async(req, res) => {
@@ -695,6 +783,33 @@ exports.endDuty = async(req, res) => {
         await user.save();
 
         res.json({ message: 'Duty ended successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Server error' });
+    }
+};
+
+exports.getSessionInfo = async (req, res) => {
+    try {
+        const { sessionID } = req.params;
+
+        const session = await Session.findById(sessionID);
+
+        if (!session) {
+            return res.status(404).json({ error: 'Session not found' });
+        }
+
+        res.json({
+            session: {
+                sessionID: session.sessionID,
+                sessionLocation: session.sessionLocation,
+                sessionDate: session.sessionDate,
+                startTime: session.startTime,
+                endTime: session.endTime,
+                // ... other session details ...
+                checkpoints: session.checkpoints,
+            },
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Server error' });
