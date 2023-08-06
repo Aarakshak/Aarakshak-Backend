@@ -679,7 +679,7 @@ exports.checkInCheckpoint = async(req, res) => {
 exports.startDutyFromNFC = async(req, res) => {
     try {
         const { badgeID } = req.params;
-        const { latitude, longitude, radius, isWithinCorrectLocation } = req.body;
+        const { latitude, longitude, radius } = req.body;
 
         const user = await User.findOne({ badgeID });
 
@@ -709,8 +709,6 @@ exports.startDutyFromNFC = async(req, res) => {
             sessionToUpdate.radius = radius;
             await user.save();
             res.json({ message: 'Duty started and session information updated' });
-        } else if (!isWithinCorrectLocation) {
-            res.status(400).json({ error: 'User is not within correct location' });
         } else {
             res.status(500).json({ error: 'Server error' });
         }
