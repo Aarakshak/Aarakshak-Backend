@@ -43,6 +43,12 @@ const userSchema = new Schema({
         type: String,
         required: 'Gender cannot be empty',
     },
+    latitude: {
+        type: Number,
+    },
+    longitude: {
+        type: Number,
+    },
     sessions: [{
         session: {
             type: Schema.Types.ObjectId,

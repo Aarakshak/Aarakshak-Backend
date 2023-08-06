@@ -469,7 +469,7 @@ exports.getUpcomingSessionsForSurviellance = async(req, res) => {
             }
             return false; // Return false if sessionDate is not valid
         }));
-        
+
         const currentSessions = users.flatMap(user => user.sessions.filter(session => {
             if (session.sessionDate && session.sessionDate instanceof Date) {
                 const sessionDateISO = session.sessionDate.toISOString();
@@ -477,7 +477,7 @@ exports.getUpcomingSessionsForSurviellance = async(req, res) => {
             }
             return false; // Return false if sessionDate is not valid
         }));
-        
+
         const userInfo = users.map(user => {
             const lastSession = user.sessions[user.sessions.length - 1];
             const lastAttendedCheck = lastSession ? lastSession.attendedCheckpoints || 0 : 0;
@@ -488,6 +488,8 @@ exports.getUpcomingSessionsForSurviellance = async(req, res) => {
                 mobileNo: user.phoneNo,
                 emailId: user.emailId,
                 photo: user.profilePic,
+                userlatitude: user.latitude,
+                userlongitude: user.longitude,
                 lastAttendedCheck,
                 sessionLocation: lastSessionInfo ? lastSessionInfo.sessionLocation : null,
                 sessionDate: lastSessionInfo ? lastSessionInfo.sessionDate : null,
