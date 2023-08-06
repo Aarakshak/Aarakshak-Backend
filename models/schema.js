@@ -96,6 +96,10 @@ const userSchema = new Schema({
                 ref: 'User',
                 required: 'Badge ID cannot be empty',
             },
+            profilePic: {
+                type: String,
+                ref: 'User'
+            },
             issueID: {
                 type: Number,
                 required: 'ID cannot be empty',

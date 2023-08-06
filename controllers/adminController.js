@@ -345,7 +345,9 @@ exports.getAllIssues = async(req, res) => {
             }
             return issuesList;
         }, []);
-
+        if (allIssues.length === 0) {
+            return res.json({ message: 'All SOS issues resolved' });
+        }
         res.json(allIssues);
     } catch (error) {
         console.error(error);
@@ -467,7 +469,7 @@ exports.getUpcomingSessionsForSurviellance = async(req, res) => {
                 const sessionDateISO = session.sessionDate.toISOString();
                 return sessionDateISO.split('T')[0] === date && session.sessionDate > currentDate;
             }
-            return false; // Return false if sessionDate is not valid
+            return false; 
         }));
         
         const currentSessions = users.flatMap(user => user.sessions.filter(session => {
@@ -475,7 +477,7 @@ exports.getUpcomingSessionsForSurviellance = async(req, res) => {
                 const sessionDateISO = session.sessionDate.toISOString();
                 return sessionDateISO.split('T')[0] === date && session.sessionDate <= currentDate;
             }
-            return false; // Return false if sessionDate is not valid
+            return false; 
         }));
         
         const userInfo = users.map(user => {
