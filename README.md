@@ -8,3 +8,5 @@ proposed idea 5->USERS) -> HEAD(INSPECTOR) -> ADMIN // POLICEID-CHECK
 
 // sessionId -> nfc card
 sosRaised
+
+// no of checkpoints ->fields
