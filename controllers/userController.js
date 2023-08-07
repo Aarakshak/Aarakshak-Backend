@@ -11,6 +11,8 @@ const crypto = require('crypto');
 const secretKey = crypto.randomBytes(64).toString('hex');
 const mongoose = require('mongoose')
 const nodemailer = require('nodemailer');
+const { DateTime } = require('luxon');
+
 
 const formatTime = (time) => {
     return new Date(time).toLocaleTimeString([], {
@@ -153,59 +155,6 @@ exports.getUserByBadgeID = async(req, res) => {
     }
 };
 
-// exports.getCurrentSession = async (req, res) => {
-//     try {
-//         const badgeID = parseInt(req.params.badgeID);
-
-//         if (isNaN(badgeID)) {
-//             return res.status(400).json({ error: 'Invalid badge ID' });
-//         }
-
-//         const user = await User.findOne({ badgeID }).populate({
-//             path: 'sessions.session',
-//             model: 'Session',
-//         });
-
-//         if (!user) {
-//             return res.status(404).json({ error: 'User not found' });
-//         }
-
-//         const currentDate = new Date();
-//         const currentDateIST = new Date(currentDate.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }));
-
-//         const currentSession = user.sessions.find(({ session }) => {
-//             if (session && session.sessionDate) {
-//                 const sessionDateIST = new Date(session.sessionDate.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }));
-//                 return sessionDateIST.toISOString().split('T')[0] === currentDateIST.toISOString().split('T')[0];
-//             }
-//             return false; // Return false if session or sessionDate is null or undefined
-//         });
-
-//         if (!currentSession) {
-//             return res.status(201).json({ error: 'No current session found' });
-//         }
-
-//         const { sessionID, sessionLocation, startTime, endTime, checkpoints } = currentSession.session;
-
-//         const response = {
-//             sessionId: sessionID,
-//             location1: sessionLocation,
-//             reportingTo: user.reportsTo,
-//             checkInTime: startTime.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
-//             checkOutTime: endTime.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
-//             checkpointCount: checkpoints.length,
-//             checkpoints,
-//             date: currentDateIST.toLocaleDateString('en-IN'),
-//         };
-
-//         res.json(response);
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).json({ error: 'Server error' });
-//     }
-// };
-
-
 exports.getCurrentSession = async(req, res) => {
     try {
         const badgeID = parseInt(req.params.badgeID);
@@ -214,47 +163,49 @@ exports.getCurrentSession = async(req, res) => {
             return res.status(400).json({ error: 'Invalid badge ID' });
         }
 
-        const user = await User.findOne({ badgeID }).populate({
-            path: 'sessions.session',
-            model: 'Session',
-        });
+        const user = await User.findOne({ badgeID });
 
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        const currentDateTime = new Date();
-        const currentSession = user.sessions.find(({ session }) => {
-            if (!session) {
-                return false;
+        const currentDate = new Date();
+        const minus = 5.5 * 60 * 60 * 1000;
+        const currentTime = currentDate.getTime() + minus;
+
+        let currentSession = null;
+        for (const { session }
+            of user.sessions) {
+            const sessionInfo = await Session.find({ _id: session });
+            if (!sessionInfo) {
+                console.log("Not found")
+                continue; 
             }
+            if (sessionInfo[0]) {
+                const sessionStartDate = new Date(sessionInfo.sessionDate);
+                const sessionStartTime = sessionInfo[0].startTime.getTime();
+                const sessionEndTime = sessionInfo[0].endTime.getTime();
 
-            const sessionDate = new Date(session.sessionDate);
-            const startTime = new Date(session.startTime);
-            const endTime = new Date(session.endTime);
-
-            return (
-                sessionDate.toISOString().split('T')[0] === currentDateTime.toISOString().split('T')[0] &&
-                currentDateTime >= startTime &&
-                currentDateTime <= endTime
-            );
-        });
+                if (currentTime >= sessionStartTime && currentTime <= sessionEndTime) {
+                    currentSession = sessionInfo;
+                    break; 
+                }
+            }
+        }
 
         if (!currentSession) {
             return res.status(201).json({ error: 'No current session found' });
         }
 
-        const { sessionID, sessionLocation, startTime, endTime, checkpoints } = currentSession.session;
-
         const response = {
-            sessionId: sessionID,
-            location1: sessionLocation,
+            sessionId: currentSession[0].sessionID,
+            location1: currentSession[0].sessionLocation,
             reportingTo: user.reportsTo,
-            checkInTime: startTime,
-            checkOutTime: endTime,
-            checkpointCount: checkpoints.length,
-            checkpoints,
-            date: currentDateTime,
+            checkpoints: currentSession[0].checkpoints,
+            checkInTime: currentSession[0].startTime.toISOString(),
+            checkOutTime: currentSession[0].endTime.toISOString(),
+            checkpointCount: currentSession[0].checkpoints.length,
+            date: currentDate,
         };
 
         res.json(response);
@@ -263,6 +214,7 @@ exports.getCurrentSession = async(req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 };
+
 
 
 exports.createIssue = async(req, res) => {

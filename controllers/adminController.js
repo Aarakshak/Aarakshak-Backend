@@ -195,7 +195,7 @@ function generateCheckPoints(startTime, endTime, numCheckPoints) {
     return randomCheckpoints;
 }
 
-exports.addSessionByAdmin = async(req, res) => {
+exports.addSessionByAdmin = async (req, res) => {
     try {
         const { adminId } = req.params;
         const { sessionLocation, sessionDate, startTime, endTime, latitude, longitude } = req.body;
@@ -208,15 +208,19 @@ exports.addSessionByAdmin = async(req, res) => {
             return res.status(404).json({ error: 'Admin not found' });
         }
 
+        const sessionDateUTC = new Date(new Date(sessionDate).getTime());
+        const startTimeUTC = new Date(new Date(startTime).getTime() );
+        const endTimeUTC = new Date(new Date(endTime).getTime());
+
         const numCheckpoints = 10;
-        const randomCheckpoints = generateCheckPoints(startTime, endTime, numCheckpoints);
+        const randomCheckpoints = generateCheckPoints(startTimeUTC, endTimeUTC, numCheckpoints);
 
         const session = new Session({
             sessionID,
             sessionLocation,
-            sessionDate,
-            startTime,
-            endTime,
+            sessionDate: sessionDateUTC,
+            startTime: startTimeUTC,
+            endTime: endTimeUTC,
             latitude,
             longitude,
             createdBy: adminId,
