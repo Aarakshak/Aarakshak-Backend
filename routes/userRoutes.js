@@ -9,7 +9,7 @@ router.get('/:badgeID/current-session', userController.getCurrentSession);
 router.post('/:badgeID/issues', userController.createIssue)
 router.get('/:badgeID/previous-sessions', userController.getPreviousSessionsAttendance);
 router.get('/:badgeID/upcoming-sessions', userController.getUpcomingSession)
-router.get('/:badgeID', userController.getProfileOfUserByBadgeID);
+router.get('/profile/:badgeID', userController.getProfileOfUserByBadgeID);
 router.get('/notifications/:badgeID', userController.getUserNotifications);
 router.patch('/notifications/:badgeID/:notificationID', userController.markNotificatonsReaded);
 router.post('/checkIn/:badgeID/:sessionID', userController.checkInCheckpoint);

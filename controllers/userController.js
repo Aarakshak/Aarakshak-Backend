@@ -359,8 +359,11 @@ exports.getUpcomingSession = async(req, res) => {
         const currentDate = new Date();
 
         const upcomingSessions = user.sessions.filter(({ session }) => {
-            const sessionDate = new Date(session.sessionDate);
-            return sessionDate > currentDate;
+            if (session && session.sessionDate) {
+                const sessionDate = new Date(session.sessionDate);
+                return sessionDate > currentDate;
+            }
+            return false;
         });
 
 
@@ -652,7 +655,7 @@ exports.createpdf = async(req, res) => {
 exports.checkInCheckpoint = async(req, res) => {
     try {
         const { badgeID, sessionID } = req.params;
-        const { timestamp, location, isWithinCorrectLocation } = req.body;
+        const { timestamp, location, radius, isWithinCorrectLocation } = req.body;
 
         const user = await User.findOne({ badgeID: badgeID });
 
@@ -671,7 +674,7 @@ exports.checkInCheckpoint = async(req, res) => {
             return res.status(400).json({ error: 'Invalid timestamp' });
         }
 
-        if (!isWithinCorrectLocation) {
+        if (isWithinCorrectLocation == false) {
             // Handle the case where the user is not within the correct location
             return res.status(400).json({ error: 'User is not within correct location' });
         }
@@ -720,7 +723,7 @@ exports.startDutyFromNFC = async(req, res) => {
         let sessionToUpdate = user.sessions.find(s => s.session.equals(session._id));
         
         console.log('Session to Update:', sessionToUpdate);
-        if (sessionToUpdate && isWithinCorrectLocation) {
+        if (sessionToUpdate ) {
             sessionToUpdate.dutyStarted = true;
             sessionToUpdate.dutyStartTime = new Date();
             sessionToUpdate.radius = radius;
