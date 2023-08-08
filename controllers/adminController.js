@@ -108,7 +108,7 @@ exports.addUserByAdmin = async(req, res) => {
         if (!admin) {
             return res.status(250).json({ error: 'Admin not found' });
         }
-        const { badgeID, firstName, surname, rank, profilePic, policeStationId, location, zone, sub_division, police_station, phoneNo, emailId, gender } = req.body;
+        const { badgeID, firstName, surname, rank, profilePic, policeStationId, location, zone, sub_division, police_station, totalSessions,totalAttended, totalHoursOnDuty, phoneNo, emailId, gender } = req.body;
         const policeStationAllowed = admin.policeStation.some(station => station.policeStationId === policeStationId);
 
         if (!policeStationAllowed) {
@@ -126,6 +126,9 @@ exports.addUserByAdmin = async(req, res) => {
             rank: rank,
             profilePic: profilePic,
             policeStationId: policeStationId,
+            totalSessions,
+            totalAttended,
+            totalHoursOnDuty,
             phoneNo,
             emailId,
             gender,
