@@ -5,7 +5,7 @@ const adminController = require('../controllers/adminController');
 router.post('/login', adminController.loginUser);
 router.post('/verify-otp', adminController.verifyOTP);
 router.get('/police-stations/:adminID',adminController.getPoliceStations);
-router.post('/add-user/:adminId/:adminId', adminController.addUserByAdmin);
+router.post('/add-user/:adminId/:adminID', adminController.addUserByAdmin);
 router.patch('/update-user/:adminId/:badgeID', adminController.updateUserByAdmin);
 router.delete('/delete-user/:adminId/:badgeID', adminController.deleteUser);
 router.post('/add-session/:adminId', adminController.addSessionByAdmin);

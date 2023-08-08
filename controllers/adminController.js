@@ -204,6 +204,11 @@ exports.addSessionByAdmin = async (req, res) => {
         const { adminId } = req.params;
         const { sessionLocation, sessionDate, startTime, endTime, latitude, longitude } = req.body;
 
+        const currentDate = new Date();
+        if (new Date(sessionDate) <= currentDate || new Date(startTime) <= currentDate || new Date(endTime) <= currentDate) {
+            return res.status(250).json({ error: 'Invalid session date or times' });
+        }
+
         const lastSession = await Session.findOne().sort({ sessionID: -1 });
         const sessionID = lastSession ? lastSession.sessionID + 1 : 1;
 
