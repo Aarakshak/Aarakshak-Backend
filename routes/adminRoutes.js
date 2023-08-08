@@ -17,6 +17,6 @@ router.post('/notif/:adminId', adminController.addUserNotification);
 router.get('/surveillance/:adminId', adminController.getUpcomingSessionsForSurviellance);
 router.get('/get-sessions/:adminId', adminController.getAllSessions)
 router.get('/get-users/:adminId', adminController.getUsersUnderAdmin);
-router.get('/get-users/:adminId', adminController.getUsersUnderAdmin);
+router.get('/statistics/:adminId', adminController.getStats);
     // router.post('/create-admin', adminController.createAdmin);
 module.exports = router;

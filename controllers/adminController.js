@@ -823,17 +823,10 @@ exports.getStats = async(req, res) => {
             usersSortedByTotalHours: usersSortedByTotalHours,
             ongoingSessions: ongoingSessions
         }
-        console.log(usersSortedByAttendanceRatio);
-        console.log(usersRightNow.length);
-        console.log(usersInNext12Hours.length);
-        console.log(resolvedIssues.length);
-        console.log(issuesRaisedToday.length);
-        console.log(usersSortedByAttendanceRatio.length);
-        console.log(usersSortedByTotalHours.length);
-        console.log(ongoingSessions.length);
         res.json(response);
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Server error' });
     }
 };
+// https://violet-kitten-toga.cyclic.cloud
