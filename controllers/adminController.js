@@ -457,13 +457,12 @@ exports.addUserNotification = async(req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 };
-
 exports.getUpcomingSessionsForSurviellance = async(req, res) => {
     try {
         const { adminId } = req.params;
         const admin = await Admin.findOne({ adminId: adminId });
         if (!admin) {
-            return res.status(250).json({ error: 'Admin not found' });
+            return res.status(404).json({ error: 'Admin not found' });
         }
 
         const users = await User.find({ policeStationId: { $in: admin.policeStation.map(ps => ps.policeStationId) } });
@@ -473,7 +472,8 @@ exports.getUpcomingSessionsForSurviellance = async(req, res) => {
         const twelve = 12 * 60 * 60 * 1000;
         let usersOfInterest = [];
         let currentSessions = [];
-
+        let ans = [];
+        let obj = null;
         for (const user of users) {
             for (const { session }
                 of user.sessions) {
@@ -483,35 +483,91 @@ exports.getUpcomingSessionsForSurviellance = async(req, res) => {
                     const sessionEndTime = sessionInfo.endTime;
 
                     const currentTime = currentDate.getTime();
-
                     if (sessionEndTime < currentTime) {
                         continue;
                     } else if (
                         sessionStartTime <= currentTime &&
                         currentTime <= sessionEndTime
                     ) {
-                        currentSessions.push(sessionInfo);
-                        usersOfInterest.push(users);
+                        obj = {
+                                userid: user._id,
+                                badgeID: 3,
+                                firstName: user.firstName,
+                                surname: user.surname,
+                                password: user.password,
+                                rank: user.rank,
+                                profilePic: user.profilePic,
+                                policeStationId: user.policeStationId,
+                                phoneNo: user.phoneNo,
+                                emailId: user.emailId,
+                                gender: user.gender,
+                                reportsTo: user.reportsTo,
+                                sessions: user.sessions,
+                                issues: user.issues,
+                                session_id: sessionInfo._id,
+                                sessionID: sessionInfo.sessionID,
+                                sessionLocation: sessionInfo.sessionLocation,
+                                sessionDate: sessionInfo.sessionDate,
+                                startTime: sessionInfo.startTime,
+                                endTime: sessionInfo.endTime,
+                                latitude: sessionInfo.latitude,
+                                longitude: sessionInfo.longitude,
+                                createdBy: sessionInfo.createdBy,
+                                checkpoints: sessionInfo.checkpoints
+
+                            }
+                            // currentSessions.push(sessionInfo);
+                            // usersOfInterest.push(users);
+                        ans.push(obj)
                     } else if (
                         sessionStartTime >= currentTime &&
                         sessionStartTime - currentTime <= twelve
                     ) {
-                        currentSessions.push(sessionInfo);
-                        usersOfInterest.push(users);
+                        obj = {
+                            userid: user._id,
+                            badgeID: 3,
+                            firstName: user.firstName,
+                            surname: user.surname,
+                            password: user.password,
+                            rank: user.rank,
+                            profilePic: user.profilePic,
+                            policeStationId: user.policeStationId,
+                            phoneNo: user.phoneNo,
+                            emailId: user.emailId,
+                            gender: user.gender,
+                            reportsTo: user.reportsTo,
+                            sessions: user.sessions,
+                            issues: user.issues,
+                            session_id: sessionInfo._id,
+                            sessionID: sessionInfo.sessionID,
+                            sessionLocation: sessionInfo.sessionLocation,
+                            sessionDate: sessionInfo.sessionDate,
+                            startTime: sessionInfo.startTime,
+                            endTime: sessionInfo.endTime,
+                            latitude: sessionInfo.latitude,
+                            longitude: sessionInfo.longitude,
+                            createdBy: sessionInfo.createdBy,
+                            checkpoints: sessionInfo.checkpoints
+
+                        }
+                        ans.push(obj)
+                            // currentSessions.push(sessionInfo);
+                            // usersOfInterest.push(users);
                     }
                 }
             }
         }
 
         res.json({
-            usersOfInterest,
-            currentSessions
+            obj
         });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Server error' });
     }
 };
+
+
 exports.getUsersUnderAdmin = async(req, res) => {
     const { adminId } = req.params;
     const admin = await Admin.findOne({ adminId: adminId });
