@@ -49,6 +49,12 @@ const userSchema = new Schema({
     longitude: {
         type: Number,
     },
+    totalSessions: {
+        type: Number,
+    },
+    totalAttended: {
+        type: Number,
+    },
     sessions: [{
         session: {
             type: Schema.Types.ObjectId,
@@ -101,14 +107,6 @@ const userSchema = new Schema({
                 type: Number,
                 ref: 'User',
                 required: 'Badge ID cannot be empty',
-            },
-            profilePic: {
-                type: String,
-                ref: 'User'
-            },
-            name : {
-                type: String,
-                ref: 'User'
             },
             issueID: {
                 type: Number,
