@@ -55,6 +55,9 @@ const userSchema = new Schema({
     totalAttended: {
         type: Number,
     },
+    totalHoursOnDuty : {
+        type: Number
+    },
     sessions: [{
         session: {
             type: Schema.Types.ObjectId,
