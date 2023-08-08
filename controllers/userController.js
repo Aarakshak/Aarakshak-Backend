@@ -12,6 +12,7 @@ const secretKey = crypto.randomBytes(64).toString('hex');
 const mongoose = require('mongoose')
 const nodemailer = require('nodemailer');
 const { DateTime } = require('luxon');
+var sanitize = require("sanitize-filename");
 
 
 const formatTime = (time) => {
@@ -629,11 +630,11 @@ exports.createpdf = async(req, res) => {
             trim: true
         }
     });
-    const path = "./Report" + badgeID + ".pdf"
+    
     const document = {
         html: html,
         data: data,
-        path: "./Report" + badgeID + ".pdf"
+        path: sanitize("./Report" + badgeID + ".pdf")
     };
     const result = await pdf.create(document, options);
     if (!result) {
