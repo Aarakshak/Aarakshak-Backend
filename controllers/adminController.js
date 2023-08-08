@@ -458,7 +458,6 @@ exports.addUserNotification = async(req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 };
-
 exports.getUpcomingSessionsForSurviellance = async(req, res) => {
     try {
         const { adminId } = req.params;
@@ -477,21 +476,21 @@ exports.getUpcomingSessionsForSurviellance = async(req, res) => {
         let ans = [];
         let obj = null;
         for (const user of users) {
-            for (const userSession of user.sessions) {
-                if (userSession && userSession.session) { // Check if userSession and session are defined
-                    const sessionInfo = await Session.findById(userSession.session);
-                    if (sessionInfo) {
-                        const sessionStartTime = sessionInfo.startTime;
-                        const sessionEndTime = sessionInfo.endTime;
-    
-                        const currentTime = currentDate.getTime();
-                        if (sessionEndTime < currentTime) {
-                            continue;
-                        } else if (
-                            sessionStartTime <= currentTime &&
-                            currentTime <= sessionEndTime
-                        ) {
-                            obj = {
+            for (const { session }
+                of user.sessions) {
+                const sessionInfo = await Session.findById(session._id);
+                if (sessionInfo) {
+                    const sessionStartTime = sessionInfo.startTime;
+                    const sessionEndTime = sessionInfo.endTime;
+
+                    const currentTime = currentDate.getTime();
+                    if (sessionEndTime < currentTime) {
+                        continue;
+                    } else if (
+                        sessionStartTime <= currentTime &&
+                        currentTime <= sessionEndTime
+                    ) {
+                        obj = {
                                 userid: user._id,
                                 badgeID: 3,
                                 firstName: user.firstName,
@@ -505,7 +504,7 @@ exports.getUpcomingSessionsForSurviellance = async(req, res) => {
                                 gender: user.gender,
                                 reportsTo: user.reportsTo,
                                 sessions: user.sessions,
-                                // ... (other user properties)
+                                issues: user.issues,
                                 session_id: sessionInfo._id,
                                 sessionID: sessionInfo.sessionID,
                                 sessionLocation: sessionInfo.sessionLocation,
@@ -516,41 +515,45 @@ exports.getUpcomingSessionsForSurviellance = async(req, res) => {
                                 longitude: sessionInfo.longitude,
                                 createdBy: sessionInfo.createdBy,
                                 checkpoints: sessionInfo.checkpoints
-                            };
-                            ans.push(obj);
-                        } else if (
-                            sessionStartTime >= currentTime &&
-                            sessionStartTime - currentTime <= twelve
-                        ) {
-                            obj = {
-                                userid: user._id,
-                                                            badgeID: 3,
-                                                            firstName: user.firstName,
-                                                            surname: user.surname,
-                                                            password: user.password,
-                                                            rank: user.rank,
-                                                            profilePic: user.profilePic,
-                                                            policeStationId: user.policeStationId,
-                                                            phoneNo: user.phoneNo,
-                                                            emailId: user.emailId,
-                                                            gender: user.gender,
-                                                            reportsTo: user.reportsTo,
-                                                            sessions: user.sessions,
-                                                            issues: user.issues,
-                                // ... (other user properties)
-                                session_id: sessionInfo._id,
-                                sessionID: sessionInfo.sessionID,
-                                sessionLocation: sessionInfo.sessionLocation,
-                                sessionDate: sessionInfo.sessionDate,
-                                startTime: sessionInfo.startTime,
-                                endTime: sessionInfo.endTime,
-                                latitude: sessionInfo.latitude,
-                                longitude: sessionInfo.longitude,
-                                createdBy: sessionInfo.createdBy,
-                                checkpoints: sessionInfo.checkpoints
-                            };
-                            ans.push(obj);
+
+                            }
+                            // currentSessions.push(sessionInfo);
+                            // usersOfInterest.push(users);
+                        ans.push(obj)
+                    } else if (
+                        sessionStartTime >= currentTime &&
+                        sessionStartTime - currentTime <= twelve
+                    ) {
+                        obj = {
+                            userid: user._id,
+                            badgeID: 3,
+                            firstName: user.firstName,
+                            surname: user.surname,
+                            password: user.password,
+                            rank: user.rank,
+                            profilePic: user.profilePic,
+                            policeStationId: user.policeStationId,
+                            phoneNo: user.phoneNo,
+                            emailId: user.emailId,
+                            gender: user.gender,
+                            reportsTo: user.reportsTo,
+                            sessions: user.sessions,
+                            issues: user.issues,
+                            session_id: sessionInfo._id,
+                            sessionID: sessionInfo.sessionID,
+                            sessionLocation: sessionInfo.sessionLocation,
+                            sessionDate: sessionInfo.sessionDate,
+                            startTime: sessionInfo.startTime,
+                            endTime: sessionInfo.endTime,
+                            latitude: sessionInfo.latitude,
+                            longitude: sessionInfo.longitude,
+                            createdBy: sessionInfo.createdBy,
+                            checkpoints: sessionInfo.checkpoints
+
                         }
+                        ans.push(obj)
+                            // currentSessions.push(sessionInfo);
+                            // usersOfInterest.push(users);
                     }
                 }
             }
