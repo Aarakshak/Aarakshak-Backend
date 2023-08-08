@@ -287,6 +287,28 @@ exports.getAllSessions = async(req, res) => {
     res.json({ sess })
 };
 
+exports.getPoliceStations = async (req, res) => {
+    try {
+   
+        const policeStationMapping = {
+            20001: { thanaName: 'Patparganj', state: 'Delhi' },
+            20002: { thanaName: 'Gl Bajaj, Greater Noida', state: 'Uttar Pradesh' },
+       
+        };
+
+        const policeStationArray = Object.keys(policeStationMapping).map(policeStationId => ({
+            policeStationId,
+            thanaName: policeStationMapping[policeStationId].thanaName,
+            state: policeStationMapping[policeStationId].state,
+        }));
+
+        res.json(policeStationArray);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Server error' });
+    }
+};
+
 
 exports.assignUsersToSession = async(req, res) => {
     try {
@@ -719,3 +741,99 @@ exports.createAdmin = async(req, res) => {
         res.status(500).json({ error: 'Server error' })
     }
 }
+
+exports.getStats = async(req, res) => {
+    try {
+        const { adminId } = req.params;
+        const admin = await Admin.findOne({ adminId: adminId });
+        if (!admin) {
+            return res.status(404).json({ error: 'Admin not found' });
+        }
+
+        const users = await User.find({ reportsTo: adminId });
+        if (!users || users.length === 0) {
+            return res.status(404).json({ error: "Users not found" });
+        }
+
+        const currentDate = new Date();
+        let ongoingSessions = [];
+        let usersRightNow = [];
+        let usersInNext12Hours = [];
+        let resolvedIssues = [];
+        let issuesRaisedToday = [];
+        let attendances = [];
+        let totalCheckpoints = 0;
+        let totalCheckpointsAttended = 0;
+        const minus = 5.5 * 60 * 60 * 1000;
+        const twelve = 12 * 60 * 60 * 1000;
+        const currentTime = currentDate.getTime() + minus;
+        const sessions = await Session.find();
+        for (const session of sessions) {
+            if (session.startTime.getTime() <= currentTime && currentTime <= session.endTime.getTime()) {
+                ongoingSessions.push(session);
+            }
+        }
+        for (const user of users) {
+            // console.log(user);
+            for (const userSession of user.sessions) {
+                const sessionInfo = await Session.findById(userSession.session);
+                if (!sessionInfo) {
+                    console.log("Session not found");
+                    continue; // Skip to the next session
+                }
+                const sessionStartTime = sessionInfo.startTime.getTime();
+                const sessionEndTime = sessionInfo.endTime.getTime();
+                // console.log(sessionInfo.sessionID);
+                // console.log(sessionInfo.startTime.toISOString());
+                // console.log(sessionInfo.endTime.toISOString())
+                // console.log(currentDate.toISOString())
+                if (sessionStartTime <= currentTime && currentTime <= sessionEndTime) {
+                    usersRightNow.push(user); // Push the user object, not the users array
+                } else if (sessionStartTime > currentTime && sessionStartTime - currentTime <= twelve) {
+                    usersInNext12Hours.push(user);
+                }
+            }
+            for (const issue of user.issues) {
+                console.log(issue);
+                const raisedTime = issue.raised.getTime();
+                if (issue.resolved) {
+                    resolvedIssues.push(issue);
+                }
+                if (raisedTime >= currentTime && raisedTime - currentTime <= 2 * twelve) {
+                    issuesRaisedToday.push(issue);
+                }
+            }
+
+        }
+        const usersSortedByAttendanceRatio = users.slice().sort((userA, userB) => {
+            const ratioA = userA.totalSessions === 0 ? 0 : userA.totalAttended / userA.totalSessions;
+            const ratioB = userB.totalSessions === 0 ? 0 : userB.totalAttended / userB.totalSessions;
+            return ratioB - ratioA; // Sort in descending order
+        });
+
+        const usersSortedByTotalHours = users.slice().sort((userA, userB) => {
+            return userB.totalHoursOnDuty - userA.totalHoursOnDuty; // Sort in descending order
+        });
+        const response = {
+            dutiesNow: usersRightNow,
+            usersInNext12Hours: usersInNext12Hours,
+            resolvedIssues: resolvedIssues,
+            issueRaisedToday: issuesRaisedToday,
+            usersSortedByAttendanceRatio: usersSortedByAttendanceRatio,
+            usersSortedByTotalHours: usersSortedByTotalHours,
+            ongoingSessions: ongoingSessions
+        }
+        console.log(usersSortedByAttendanceRatio);
+        console.log(usersRightNow.length);
+        console.log(usersInNext12Hours.length);
+        console.log(resolvedIssues.length);
+        console.log(issuesRaisedToday.length);
+        console.log(usersSortedByAttendanceRatio.length);
+        console.log(usersSortedByTotalHours.length);
+        console.log(ongoingSessions.length);
+        res.json(response);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Server error' });
+    }
+};
