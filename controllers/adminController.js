@@ -48,11 +48,11 @@ exports.loginUser = async(req, res) => {
         let admin = await Admin.findOne({ emailId, password });
 
         if (!admin) {
-            return res.status(401).json({ error: 'Invalid credentials' });
+            return res.status(250).json({ error: 'Invalid credentials' });
         }
 
         if (password !== admin.password) {
-            return res.status(401).json({ error: 'Invalid credentials' });
+            return res.status(250).json({ error: 'Invalid credentials' });
         }
         // const newOTP = generateOTP();
         // admin.otp = newOTP;
@@ -75,11 +75,11 @@ exports.verifyOTP = async(req, res) => {
 
         const admin = await Admin.findOne({ adminId: adminID });
         if (!admin) {
-            return res.status(404).json({ error: 'Admin not found' })
+            return res.status(250).json({ error: 'Admin not found' })
         }
 
         if (admin.otp !== otp || Date.now() > admin.otpExpiration) {
-            return res.status(401).json({ error: 'Invalid otp' });
+            return res.status(250).json({ error: 'Invalid otp' });
         }
 
         admin.otp = undefined;
@@ -105,18 +105,18 @@ exports.addUserByAdmin = async(req, res) => {
         const { adminId } = req.params;
         const admin = await Admin.findOne({ adminId: adminId });
         if (!admin) {
-            return res.status(404).json({ error: 'Admin not found' });
+            return res.status(250).json({ error: 'Admin not found' });
         }
         const { badgeID, firstName, surname, rank, profilePic, policeStationId, location, zone, sub_division, police_station, phoneNo, emailId, gender } = req.body;
         const policeStationAllowed = admin.policeStation.some(station => station.policeStationId === policeStationId);
 
         if (!policeStationAllowed) {
-            return res.status(400).json({ error: 'Invalid policeStationId. The admin cannot assign this policeStation to the user.' });
+            return res.status(250).json({ error: 'Invalid policeStationId. The admin cannot assign this policeStation to the user.' });
         }
 
         const existingUser = await User.findOne({ $or: [{ badgeID }, { emailId }] });
         if (existingUser) {
-            return res.status(400).json({ error: 'User with the same badge ID or email ID already exists' });
+            return res.status(250).json({ error: 'User with the same badge ID or email ID already exists' });
         }
         const user = new User({
             badgeID: badgeID,
@@ -144,7 +144,7 @@ exports.updateUserByAdmin = async(req, res) => {
 
         const user = await User.findOne({ badgeID });
         if (!user) {
-            return res.status(404).json({ error: 'User not found' });
+            return res.status(250).json({ error: 'User not found' });
         }
 
         const fields = req.body;
@@ -170,7 +170,7 @@ exports.deleteUser = async(req, res) => {
         const user = await User.findOne({ badgeID });
 
         if (!user) {
-            return res.status(404).json({ error: 'User not found' });
+            return res.status(250).json({ error: 'User not found' });
         }
 
         await user.deleteOne({ badgeID });
@@ -205,7 +205,7 @@ exports.addSessionByAdmin = async (req, res) => {
 
         const admin = await Admin.findOne({ adminId: adminId });
         if (!admin) {
-            return res.status(404).json({ error: 'Admin not found' });
+            return res.status(250).json({ error: 'Admin not found' });
         }
 
         const sessionDateUTC = new Date(new Date(sessionDate).getTime());
@@ -244,7 +244,7 @@ exports.getSessionsByAdmin = async(req, res) => {
         const currentTime = new Date().getTime();
 
         if (!sessions || sessions.length === 0) {
-            return res.status(404).json({ error: 'No sessions found for this admin' });
+            return res.status(250).json({ error: 'No sessions found for this admin' });
         }
 
         const sessionsOfInterest = sessions.filter(session => {
@@ -273,7 +273,7 @@ exports.getAllSessions = async(req, res) => {
     const { adminId } = req.params;
     const admin = await Admin.findOne({ adminId: adminId });
     if (!admin) {
-        return res.status(404).json({ error: 'Admin not found' });
+        return res.status(250).json({ error: 'Admin not found' });
     }
     const sess = await Session.find({})
     if (!sess) {
@@ -291,22 +291,22 @@ exports.assignUsersToSession = async(req, res) => {
 
         const admin = await Admin.findOne({ adminId: adminId });
         if (!admin) {
-            return res.status(404).json({ error: 'Admin not found' });
+            return res.status(250).json({ error: 'Admin not found' });
         }
 
         const session = await Session.findOne({ sessionID: sessionId });
         if (!session) {
-            return res.status(404).json({ error: 'Session not found' });
+            return res.status(250).json({ error: 'Session not found' });
         }
 
         const users = await User.find({ badgeID: { $in: userIds } });
 
         if (!users || users.length === 0) {
-            return res.status(404).json({ error: 'Users not found' });
+            return res.status(250).json({ error: 'Users not found' });
         }
 
         if (!session) {
-            return res.status(404).json({ error: 'Session not found' });
+            return res.status(250).json({ error: 'Session not found' });
         }
 
         for (const user of users) {
@@ -337,7 +337,7 @@ exports.getAllIssues = async(req, res) => {
 
         const admin = await Admin.findOne({ adminId: adminId });
         if (!admin) {
-            return res.status(404).json({ error: 'Admin not found' });
+            return res.status(250).json({ error: 'Admin not found' });
         }
         const usersWithIssues = await User.find({});
 
@@ -364,12 +364,12 @@ exports.resolveIssue = async(req, res) => {
         const { adminId, badgeID, issueID } = req.params;
         const user = await User.findOne({ badgeID });
         if (!user) {
-            return res.status(404).json({ error: 'User not found' });
+            return res.status(250).json({ error: 'User not found' });
         }
         console.log('User:', user);
         const issue = user.issues.find(issueObj => issueObj.issue.issueID === parseInt(issueID));
         if (!issue) {
-            return res.status(404).json({ error: 'Issue not found' });
+            return res.status(250).json({ error: 'Issue not found' });
         }
         issue.issue.resolved = true; // Mark the resolved field as true
         issue.pertaining = false; // Assuming you also want to set pertaining to false
@@ -407,7 +407,7 @@ exports.addUserNotification = async(req, res) => {
             const usersWithPoliceStationId = await User.find({ policeStationId: badgeID });
 
             if (usersWithPoliceStationId.length === 0) {
-                return res.status(404).json({ error: 'No users found with the specified policeStationId' });
+                return res.status(250).json({ error: 'No users found with the specified policeStationId' });
             }
 
             for (const user of usersWithPoliceStationId) {
@@ -427,7 +427,7 @@ exports.addUserNotification = async(req, res) => {
             const user = await User.findOne({ badgeID: badgeID });
 
             if (!user) {
-                return res.status(404).json({ error: 'User not found' });
+                return res.status(250).json({ error: 'User not found' });
             }
 
             const notificationID = await generateNewNotificationId();
@@ -443,7 +443,7 @@ exports.addUserNotification = async(req, res) => {
             user.notifications.push(notification);
             await user.save();
         } else {
-            return res.status(400).json({ error: 'Invalid badgeID. The badgeID must be between 1 to 1000 or 20000 to 30000' });
+            return res.status(250).json({ error: 'Invalid badgeID. The badgeID must be between 1 to 1000 or 20000 to 30000' });
         }
 
         res.json({ message: 'Notification added successfully' });
@@ -458,7 +458,7 @@ exports.getUpcomingSessionsForSurviellance = async(req, res) => {
         const { adminId } = req.params;
         const admin = await Admin.findOne({ adminId: adminId });
         if (!admin) {
-            return res.status(404).json({ error: 'Admin not found' });
+            return res.status(250).json({ error: 'Admin not found' });
         }
 
         const users = await User.find({ policeStationId: { $in: admin.policeStation.map(ps => ps.policeStationId) } });
@@ -511,13 +511,13 @@ exports.getUsersUnderAdmin = async(req, res) => {
     const { adminId } = req.params;
     const admin = await Admin.findOne({ adminId: adminId });
     if (!admin) {
-        return res.status(404).json({ error: 'Admin not found' });
+        return res.status(250).json({ error: 'Admin not found' });
     }
     const users = await User.find({ reportsTo: adminId });
     if (users.length > 0) {
         return res.status(200).json({ users });
     } else {
-        return res.status(404).json({ error: 'No users found under this admin' });
+        return res.status(250).json({ error: 'No users found under this admin' });
     }
 }
 exports.createAdmin = async(req, res) => {
@@ -525,7 +525,7 @@ exports.createAdmin = async(req, res) => {
         const { adminId, firstName, emailId, password, designation } = req.body;
         const existingAdmin = await Admin.findOne({ $or: [{ adminId }, { emailId }] });
         if (existingAdmin) {
-            return res.status(400).json({ error: 'Admin with the same adminId or emailId already exists' });
+            return res.status(250).json({ error: 'Admin with the same adminId or emailId already exists' });
         }
         const admin = new Admin({
             adminId,
