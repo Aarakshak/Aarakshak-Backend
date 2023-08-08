@@ -7,6 +7,7 @@ dotenv.config()
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const secretKey = crypto.randomBytes(64).toString('hex');
+var SqlString = require('sqlstring');
 
 const nodemailer = require('nodemailer');
 
@@ -45,7 +46,7 @@ exports.loginUser = async(req, res) => {
     try {
 
         const { emailId, password } = req.body;
-        let admin = await Admin.findOne({ emailId, password });
+        let admin = await SqlString.Admin.findOne({ emailId, password });
 
         if (!admin) {
             return res.status(250).json({ error: 'Invalid credentials' });
@@ -73,7 +74,7 @@ exports.verifyOTP = async(req, res) => {
     try {
         let { adminID, otp } = req.body;
 
-        const admin = await Admin.findOne({ adminId: adminID });
+        const admin = await SqlString.Admin.findOne({ adminId: adminID });
         if (!admin) {
             return res.status(250).json({ error: 'Admin not found' })
         }
@@ -294,7 +295,7 @@ exports.assignUsersToSession = async(req, res) => {
             return res.status(250).json({ error: 'Admin not found' });
         }
 
-        const session = await Session.findOne({ sessionID: sessionId });
+        const session = await SqlString.Session.findOne({ sessionID: sessionId });
         if (!session) {
             return res.status(250).json({ error: 'Session not found' });
         }
@@ -408,8 +409,7 @@ exports.addUserNotification = async(req, res) => {
         const { badgeID, title, type, message } = req.body;
 
         if (badgeID >= 20000 && badgeID <= 30000) {
-            // Send notifications to all users with the given policeStationId (badgeID)
-            const usersWithPoliceStationId = await User.find({ policeStationId: badgeID });
+            const usersWithPoliceStationId = await SqlString.User.find({ policeStationId: badgeID });
 
             if (usersWithPoliceStationId.length === 0) {
                 return res.status(250).json({ error: 'No users found with the specified policeStationId' });
@@ -429,7 +429,7 @@ exports.addUserNotification = async(req, res) => {
                 await user.save();
             }
         } else if (badgeID >= 1 && badgeID <= 1000) {
-            const user = await User.findOne({ badgeID: badgeID });
+            const user = await SqlString.User.findOne({ badgeID: badgeID });
 
             if (!user) {
                 return res.status(250).json({ error: 'User not found' });

@@ -13,7 +13,7 @@ const mongoose = require('mongoose')
 const nodemailer = require('nodemailer');
 const { DateTime } = require('luxon');
 var sanitize = require("sanitize-filename");
-
+var SqlString = require('sqlstring');
 
 const formatTime = (time) => {
     return new Date(time).toLocaleTimeString([], {
@@ -60,7 +60,7 @@ async function sendOTPByEmail(email, otp) {
 exports.loginUser = async(req, res) => {
     try {
         const { emailId, password, otp } = req.body;
-        let user = await User.findOne({ emailId, password });
+        let user = await SqlString.User.findOne({ emailId, password });
 
         if (!user) {
             return res.status(401).json({ error: 'Invalid credentials' });
@@ -88,7 +88,7 @@ exports.loginUser = async(req, res) => {
 exports.verifyOTP = async(req, res) => {
     try {
         let { badgeID, otp } = req.body;
-        let user = await User.findOne({ badgeID });
+        let user = await SqlString.User.findOne({ badgeID });
         if (!user) {
             return res.status(404).json({ error: 'User not found' })
         }
@@ -758,7 +758,7 @@ exports.startDutyFromNFC = async(req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        const session = await Session.findOne({
+        const session = await SqlString.Session.findOne({
             sessionDate: { $gte: new Date() },
             latitude: latitude,
             longitude: longitude,
