@@ -131,7 +131,7 @@ exports.getUserByBadgeID = async(req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        const { rank, firstName, surname, sessions } = user;
+        const { rank, firstName, surname,profilePic, sessions } = user;
         const sessionInfo = sessions.map(({ session }) => ({
             location: session.sessionLocation,
             location2: session.sessionLocation2,
@@ -145,6 +145,7 @@ exports.getUserByBadgeID = async(req, res) => {
             badgeID,
             firstName,
             surname,
+            profilePic,
             sessions: sessionInfo,
         };
 
