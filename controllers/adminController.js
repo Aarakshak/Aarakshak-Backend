@@ -173,7 +173,7 @@ exports.deleteUser = async(req, res) => {
             return res.status(250).json({ error: 'User not found' });
         }
 
-        await user.deleteOne({ badgeID });
+        await user.deleteOne({badgeID});
 
         res.json({ message: 'User deleted successfully' });
     } catch (error) {
@@ -305,6 +305,11 @@ exports.assignUsersToSession = async(req, res) => {
             return res.status(250).json({ error: 'Users not found' });
         }
 
+        for (const user of users) {
+            if (user.sessions.some((userSession) => userSession.session && userSession.session.equals(session._id))) {
+                return res.status(250).json({ error: 'Session already assigned to the user' });
+            }
+        }
         if (!session) {
             return res.status(250).json({ error: 'Session not found' });
         }
