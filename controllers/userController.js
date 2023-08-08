@@ -339,7 +339,6 @@ exports.getPreviousSessionsAttendance = async(req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 };
-
 exports.getUpcomingSession = async(req, res) => {
     try {
         const badgeID = parseInt(req.params.badgeID);
@@ -348,52 +347,102 @@ exports.getUpcomingSession = async(req, res) => {
             return res.status(400).json({ error: 'Invalid badge ID' });
         }
 
-        const user = await User.findOne({ badgeID }).populate({
-            path: 'sessions.session',
-            model: 'Session',
-        });
+        const user = await User.findOne({ badgeID });
 
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
 
         const currentDate = new Date();
+        console.log(currentDate.toISOString())
+        const minus = 5.5 * 60 * 60 * 1000;
+        const currentTime = currentDate.getTime();
 
-        const upcomingSessions = user.sessions.filter(({ session }) => {
-            if (session && session.sessionDate) {
-                const sessionDate = new Date(session.sessionDate);
-                return sessionDate > currentDate;
+        let currentSession = null;
+        let upcomingSessions = [];
+        for (const { session }
+            of user.sessions) {
+            // console.log(session);
+            const sessionInfo = await Session.find({ _id: session });
+            if (!sessionInfo) {
+                console.log("Not found")
+                continue;
             }
-            return false;
-        });
+            if (sessionInfo[0]) {
+                const sessionStartDate = new Date(sessionInfo.sessionDate);
+                const twelve = 12 * 60 * 60 * 1000;
+                const sessionStartTime = sessionInfo[0].startTime.getTime();
+                const sessionEndTime = sessionInfo[0].endTime.getTime();
 
+                console.log(sessionInfo[0].startTime.toISOString());
+                console.log(sessionInfo[0].endTime.toISOString());
 
-        if (upcomingSessions.length === 0) {
-            return res.json({
-                name: `${user.firstName} ${user.surname}`,
-                rank: user.rank,
-                upcomingSessions: [],
-                message: 'No upcoming sessions found.',
-            });
+                if (currentTime + minus < sessionStartTime) {
+                    upcomingSessions.push(sessionInfo);
+                }
+            }
         }
-        const response = {
-            name: `${user.firstName} ${user.surname}`,
-            rank: user.rank,
-            upcomingSessions: upcomingSessions.map(({ session }) => ({
 
-                date: new Date(session.sessionDate).toISOString(), // Convert date to ISO string
-                day: new Date(session.sessionDate).toLocaleDateString('en-US', { weekday: 'long' }),
-                location1: session.sessionLocation,
-                location2: session.sessionLocation2,
-            })),
-        };
 
-        res.json(response);
+        res.json(upcomingSessions);
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Server error' });
     }
 };
+// exports.getUpcomingSession = async (req, res) => {
+//     try {
+//         const badgeID = parseInt(req.params.badgeID);
+
+//         if (isNaN(badgeID)) {
+//             return res.status(400).json({ error: 'Invalid badge ID' });
+//         }
+
+//         const user = await User.findOne({ badgeID });
+
+//         if (!user) {
+//             return res.status(404).json({ error: 'User not found' });
+//         }
+
+//         const currentDate = new Date();
+//         const currentTime = currentDate.getTime();
+
+//         let upcomingSessions = [];
+
+//         for (const { session } of user.sessions) {
+//             const sessionInfo = await Session.findById(session);
+//             if (!sessionInfo) {
+//                 console.log("Session not found");
+//                 continue;
+//             }
+
+//             const sessionStartTime = new Date(sessionInfo.startTime).getTime();
+            
+//             if (sessionStartTime > currentTime) {
+//                 upcomingSessions.push({
+//                     sessionId: sessionInfo.sessionID,
+//                     location1: sessionInfo.sessionLocation,
+//                     reportingTo: user.reportsTo,
+//                     checkpoints: sessionInfo.checkpoints,
+//                     checkInTime: new Date(sessionInfo.startTime).toISOString(),
+//                     checkOutTime: new Date(sessionInfo.endTime).toISOString(),
+//                     checkpointCount: sessionInfo.checkpoints.length,
+//                     date: new Date(sessionInfo.sessionDate),
+//                 });
+//             }
+//         }
+
+//         const response = {
+//             upcomingSessions,
+//         };
+
+//         res.json(response);
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ error: 'Server error' });
+//     }
+// };
+
 
 exports.getProfileOfUserByBadgeID = async(req, res) => {
     try {
