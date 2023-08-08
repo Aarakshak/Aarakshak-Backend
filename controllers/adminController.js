@@ -46,7 +46,7 @@ exports.loginUser = async(req, res) => {
     try {
 
         const { emailId, password } = req.body;
-        let admin = await SqlString.Admin.findOne({ emailId, password });
+        let admin = await Admin.findOne({ emailId, password });
 
         if (!admin) {
             return res.status(250).json({ error: 'Invalid credentials' });
@@ -295,7 +295,7 @@ exports.assignUsersToSession = async(req, res) => {
             return res.status(250).json({ error: 'Admin not found' });
         }
 
-        const session = await SqlString.Session.findOne({ sessionID: sessionId });
+        const session = await Session.findOne({ sessionID: sessionId });
         if (!session) {
             return res.status(250).json({ error: 'Session not found' });
         }
@@ -429,7 +429,7 @@ exports.addUserNotification = async(req, res) => {
                 await user.save();
             }
         } else if (badgeID >= 1 && badgeID <= 1000) {
-            const user = await SqlString.User.findOne({ badgeID: badgeID });
+            const user = await User.findOne({ badgeID: badgeID });
 
             if (!user) {
                 return res.status(250).json({ error: 'User not found' });
