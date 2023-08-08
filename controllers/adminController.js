@@ -559,7 +559,7 @@ exports.getUpcomingSessionsForSurviellance = async(req, res) => {
         }
 
         res.json({
-            obj
+            ans
         });
     } catch (error) {
         console.error(error);
