@@ -551,8 +551,7 @@ exports.getUpcomingSessionsForSurviellance = async(req, res) => {
 
                         }
                         ans.push(obj)
-                            // currentSessions.push(sessionInfo);
-                            // usersOfInterest.push(users);
+            
                     }
                 }
             }

@@ -9,6 +9,11 @@ const corsOptions = {
     optionSuccessStatus: 200
 }
 
+var RateLimit = require('express-rate-limit');
+var limiter = RateLimit({
+  windowMs: 1*60*1000, // 1 minute
+  max: 5
+});
 
 dotenv.config()
 
@@ -22,6 +27,7 @@ const adminRoutes = require('./routes/adminRoutes')
 
 const app = express();
 
+app.use(limiter);
 app.use(cors(corsOptions));
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(morgan('dev'));
