@@ -453,7 +453,6 @@ exports.addUserNotification = async(req, res) => {
     }
 };
 
-
 exports.getUpcomingSessionsForSurviellance = async(req, res) => {
     try {
         const { adminId } = req.params;
@@ -464,56 +463,50 @@ exports.getUpcomingSessionsForSurviellance = async(req, res) => {
 
         const users = await User.find({ policeStationId: { $in: admin.policeStation.map(ps => ps.policeStationId) } });
 
+        const minus = 5.5 * 60 * 60 * 1000;
         const currentDate = new Date();
+        const twelve = 12 * 60 * 60 * 1000;
+        let usersOfInterest = [];
+        let currentSessions = [];
 
-        const date = req.query.date;
+        for (const user of users) {
+            for (const { session }
+                of user.sessions) {
+                const sessionInfo = await Session.findById(session._id);
+                if (sessionInfo) {
+                    const sessionStartTime = sessionInfo.startTime;
+                    const sessionEndTime = sessionInfo.endTime;
 
-        const upcomingSessions = users.flatMap(user => user.sessions.filter(session => {
-            if (session.sessionDate && session.sessionDate instanceof Date) {
-                const sessionDateISO = session.sessionDate.toISOString();
-                return sessionDateISO.split('T')[0] === date && session.sessionDate > currentDate;
+                    const currentTime = currentDate.getTime();
+
+                    if (sessionEndTime < currentTime) {
+                        continue;
+                    } else if (
+                        sessionStartTime <= currentTime &&
+                        currentTime <= sessionEndTime
+                    ) {
+                        currentSessions.push(sessionInfo);
+                        usersOfInterest.push(users);
+                    } else if (
+                        sessionStartTime >= currentTime &&
+                        sessionStartTime - currentTime <= twelve
+                    ) {
+                        currentSessions.push(sessionInfo);
+                        usersOfInterest.push(users);
+                    }
+                }
             }
-            return false; 
-        }));
+        }
 
-        const currentSessions = users.flatMap(user => user.sessions.filter(session => {
-            if (session.sessionDate && session.sessionDate instanceof Date) {
-                const sessionDateISO = session.sessionDate.toISOString();
-                return sessionDateISO.split('T')[0] === date && session.sessionDate <= currentDate;
-            }
-            return false; 
-        }));
-
-        const userInfo = users.map(user => {
-            const lastSession = user.sessions[user.sessions.length - 1];
-            const lastAttendedCheck = lastSession ? lastSession.attendedCheckpoints || 0 : 0;
-            const lastSessionInfo = lastSession ? lastSession.session : null;
-            return {
-                badgeID: user.badgeID,
-                name: `${user.firstName} ${user.surname}`,
-                mobileNo: user.phoneNo,
-                emailId: user.emailId,
-                photo: user.profilePic,
-                userlatitude: user.latitude,
-                userlongitude: user.longitude,
-                lastAttendedCheck,
-                sessionLocation: lastSessionInfo ? lastSessionInfo.sessionLocation : null,
-                sessionDate: lastSessionInfo ? lastSessionInfo.sessionDate : null,
-                sessionTime: lastSessionInfo ? lastSessionInfo.startTime : null,
-                firstCheckIn: lastSession ? lastSession.dutyStartTime || null : null,
-                endTime: lastSessionInfo ? lastSessionInfo.endTime : null,
-            };
-        });
         res.json({
-            userInfo,
-            upcomingSessions,
-            currentSessions,
-        })
+            usersOfInterest,
+            currentSessions
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Server error' });
     }
-}
+};
 exports.getUsersUnderAdmin = async(req, res) => {
     const { adminId } = req.params;
     const admin = await Admin.findOne({ adminId: adminId });
