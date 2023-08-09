@@ -199,13 +199,62 @@ function generateCheckPoints(startTime, endTime, numCheckPoints) {
     return randomCheckpoints;
 }
 
-exports.addSessionByAdmin = async (req, res) => {
+// exports.addSessionByAdmin = async (req, res) => {
+//     try {
+//         const { adminId } = req.params;
+//         const { sessionLocation, sessionDate, startTime, endTime, latitude, longitude } = req.body;
+
+//         const currentDate = new Date();
+//         if (new Date(sessionDate) <= currentDate || new Date(startTime) <= currentDate || new Date(endTime) <= currentDate) {
+//             return res.status(250).json({ error: 'Invalid session date or times' });
+//         }
+// 2
+//         const lastSession = await Session.findOne().sort({ sessionID: -1 });
+//         const sessionID = lastSession ? lastSession.sessionID + 1 : 1;
+
+//         const admin = await Admin.findOne({ adminId: adminId });
+//         if (!admin) {
+//             return res.status(250).json({ error: 'Admin not found' });
+//         }
+
+//         const sessionDateUTC = new Date(new Date(sessionDate).getTime());
+//         const startTimeUTC = new Date(new Date(startTime).getTime() );
+//         const endTimeUTC = new Date(new Date(endTime).getTime());
+
+//         const numCheckpoints = 10;
+//         const randomCheckpoints = generateCheckPoints(startTimeUTC, endTimeUTC, numCheckpoints);
+
+//         const session = new Session({
+//             sessionID,
+//             sessionLocation,
+//             sessionDate: sessionDateUTC,
+//             startTime: startTimeUTC,
+//             endTime: endTimeUTC,
+//             latitude,
+//             longitude,
+//             createdBy: adminId,
+//             checkpoints: randomCheckpoints
+//         });
+
+//         await session.save();
+
+//         res.json({ message: 'Session added successfully', sessionId: sessionID });
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ error: 'Server error' });
+//     }
+// };
+exports.addSessionByAdmin = async(req, res) => {
     try {
         const { adminId } = req.params;
         const { sessionLocation, sessionDate, startTime, endTime, latitude, longitude } = req.body;
 
-        const currentDate = new Date();
-        if (new Date(sessionDate) <= currentDate || new Date(startTime) <= currentDate || new Date(endTime) <= currentDate) {
+        const currentDateUTC = new Date().getTime();
+        const sessionDateTimestamp = new Date(sessionDate).getTime();
+        const startTimeTimestamp = new Date(startTime).getTime();
+        const endTimeTimestamp = new Date(endTime).getTime();
+
+        if (sessionDateTimestamp <= currentDateUTC || startTimeTimestamp <= currentDateUTC || endTimeTimestamp <= currentDateUTC) {
             return res.status(250).json({ error: 'Invalid session date or times' });
         }
 
@@ -217,23 +266,19 @@ exports.addSessionByAdmin = async (req, res) => {
             return res.status(250).json({ error: 'Admin not found' });
         }
 
-        const sessionDateUTC = new Date(new Date(sessionDate).getTime());
-        const startTimeUTC = new Date(new Date(startTime).getTime() );
-        const endTimeUTC = new Date(new Date(endTime).getTime());
-
         const numCheckpoints = 10;
-        const randomCheckpoints = generateCheckPoints(startTimeUTC, endTimeUTC, numCheckpoints);
+        const randomCheckpoints = generateCheckPoints(startTime, endTime, numCheckpoints);
 
         const session = new Session({
             sessionID,
             sessionLocation,
-            sessionDate: sessionDateUTC,
-            startTime: startTimeUTC,
-            endTime: endTimeUTC,
+            sessionDate,
+            startTime,
+            endTime,
             latitude,
             longitude,
             createdBy: adminId,
-            checkpoints: randomCheckpoints
+            checkpoints: randomCheckpoints,
         });
 
         await session.save();
@@ -244,7 +289,6 @@ exports.addSessionByAdmin = async (req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 };
-
 exports.getSessionsByAdmin = async(req, res) => {
     try {
         const { adminId } = req.params;
@@ -260,7 +304,7 @@ exports.getSessionsByAdmin = async(req, res) => {
             const minus = 5.5 * 60 * 60 * 1000;
             const sessionStartTime = session.startTime.getTime() - minus;
             const sessionEndTime = session.endTime.getTime() - minus;
-            const twelve = 12 * 60 * 60 * 1000;
+            const twelve = 24 * 60 * 60 * 1000;
             if (sessionEndTime < currentTime) {
                 return false; // Exclude sessions that have finished
             } else if (sessionStartTime <= currentTime && currentTime <= sessionEndTime) {
