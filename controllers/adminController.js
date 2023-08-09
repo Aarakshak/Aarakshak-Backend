@@ -71,7 +71,7 @@ exports.loginUser = async(req, res) => {
 
 exports.verifyOTP = async(req, res) => {
     try {
-        let { adminID, otp } = req.body;
+        let { otp } = req.body;
 
         const admin = await Admin.findOne({ adminId: adminID });
         if (!admin) {

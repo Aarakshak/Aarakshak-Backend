@@ -948,13 +948,13 @@ exports.endDuty = async(req, res) => {
         const user = await User.findOne({ badgeID: badgeId });
 
         if (!user) {
-            return res.status(404).json({ error: 'User not found' });
+            return res.status(250).json({ error: 'User not found' });
         }
 
         const sessionToUpdate = user.sessions.find(s => s.dutyStarted && !s.dutyEnded);
 
         if (!sessionToUpdate) {
-            return res.status(404).json({ error: 'No active duty session found' });
+            return res.status(250).json({ error: 'No active duty session found' });
         }
 
         sessionToUpdate.dutyEnded = true;
