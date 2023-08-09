@@ -15,7 +15,6 @@ dotenv.config()
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const notFoundMiddleware = require('./middleware/not-found');
-// const crossOriginMiddleware = require('./middleware/crossOrigin');
 
 const userRoutes = require('./routes/userRoutes');
 const adminRoutes = require('./routes/adminRoutes')

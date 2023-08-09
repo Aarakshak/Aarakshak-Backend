@@ -186,6 +186,32 @@ exports.deleteUser = async(req, res) => {
     }
 };
 
+exports.deleteSessionByAdmin = async (req, res) => {
+    try {
+        const { adminId, sessionID } = req.params;
+
+        // Find the admin
+        const admin = await Admin.findOne({ adminId: adminId });
+        if (!admin) {
+            return res.status(404).json({ error: 'Admin not found' });
+        }
+
+        // Find the session
+        const session = await Session.findOne({ sessionID: sessionID });
+        if (!session) {
+            return res.status(404).json({ error: 'Session not found' });
+        }
+
+        // Delete the session
+        await session.deleteOne({sessionID});
+
+
+        res.json({ message: 'Session deleted successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Server error' });
+    }
+};
 function generateCheckPoints(startTime, endTime, numCheckPoints) {
     const randomCheckpoints = [];
     const startTimeStamp = new Date(startTime).getTime();

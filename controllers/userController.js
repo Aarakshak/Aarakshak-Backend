@@ -971,7 +971,7 @@ exports.endDuty = async(req, res) => {
 
 exports.getSessionInfo = async (req, res) => {
     try {
-        const { sessionID } = req.params;
+        const { adminIDsessionID } = req.params;
 
         const session = await Session.findById(sessionID);
 

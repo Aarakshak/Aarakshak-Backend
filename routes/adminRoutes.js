@@ -8,6 +8,7 @@ router.get('/police-stations/:adminID',adminController.getPoliceStations);
 router.post('/add-user/:adminId', adminController.addUserByAdmin);
 router.patch('/update-user/:adminId/:badgeID', adminController.updateUserByAdmin);
 router.delete('/delete-user/:adminId/:badgeID', adminController.deleteUser);
+router.delete('/delete-session/:adminId/:sessionID', adminController.deleteSessionByAdmin);
 router.post('/add-session/:adminId', adminController.addSessionByAdmin);
 router.get('/:adminId/sessions', adminController.getSessionsByAdmin);
 router.post('/assign-session/:adminId', adminController.assignUsersToSession);
