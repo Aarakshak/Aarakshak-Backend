@@ -4,40 +4,264 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- <link rel="stylesheet" href="./tempstyles.css"> -->
-    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous" /> -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <script src="https://kit.fontawesome.com/ee3f2d27bf.js" crossorigin="anonymous"></script>
+    <style>
+        body {
+            width: 15.8cm;
+            min-height: 21.7cm;
+            border: #333 2px solid;
+            padding: 1%;
+        }
+        h3{
+            font-family: 'Roboto', sans-serif;
+            border: #333 2px solid;
+            margin-bottom: 0px;
+            padding: 2px;
+            color: #fff;
+        }
+        h2, h4{
+            font-family: 'Roboto', sans-serif;
+        }
+        span{
+            font-family: 'Oswald', sans-serif;
+        }  
+        .header {
+            text-align: center;
+        }
+        .logos {
+            background-color: none;
+            display: flex;
+            justify-content: center;
+        }
+        .user{
+            display: flex;
+            flex-direction: row;
+            margin-left: 10px;
+            margin-right: 5px;
+        }
+        .logo {
+            width: auto;
+            height: 75px;
+            margin-bottom: 20px;
+        }
+        .title-box{
+            display: flex;
+            flex-direction: row;
+        }
+        .performance {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 60%;
+            padding-left: 10px;
+            padding-right: 10px;
+            padding-top: 25px;
+            margin-left: 5px;
+        }
+        .sess{
+            width: 30.5%;
+        }
+        .sessionDetails {
+            width: 30%;
+            padding: 3px;
+            border: 2px solid #333;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .title-img img{
+            border-radius: 50%;
+        }
+        .content {
+            font-family: 'Roboto Condensed', sans-serif;
+            border-right: 0.5px solid black; 
+        }
+        .sessions{
+            margin: 5px;
+        }
+        .icon{
+            margin-top: 10px;
+            margin-left:-15px;
+            margin-right: -15px;
+            display: flex;
+            align-items: center;
+        }
+        .heading{
+            text-align: center;
+            background: #3f47c7;
+        }
+        .box {
+            text-align: center;
+            display: flex;
+            flex-direction: row;
+            width: 7cm;
+            height: 1.5cm;
+            border: 1px solid black; 
+            margin: 7px;
+        }
+        .box > div {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .box .title {
+            font-family: 'Roboto Condensed', sans-serif;
+            border-right: 1px solid black; 
+        }
+        
+        .box .content {
+            font-family: 'Roboto Condensed', sans-serif;
+            border-right: 1px solid black; 
+            padding: 0 10px; 
+        }
+
+        .box .icon {
+            padding: 0 5px;
+        }
+    </style>
 </head>
 
 <body>
-    <div class="userDetails" style="text-align: center;">
-        <img src="https://truthultimate.com/wp-content/uploads/2021/09/Satyamev-Jayate-Logo.png" style="width:10%;height:15%;" alt="">
-        <img src="https://drive.google.com/file/d/1QCqSqLcVhhZc9Kfq45PHWf9MxgQjcV8O/view?usp=share_link" style="width:10%;height:15%;" alt="Image not found">
-        <br>
-        <h2>Officer details</h2>
-    </div>
-    <div class="primaryDetails">
-        <h4>Officer# {{badgeID}}</h4>
-        <h4>Name: {{surname}}, {{firstName}}</h4>
-        <h4>Rank: {{rank}}</h4>
-        <h4>Gender: {{gender}}</h4>
-        <h4>Reports to :{{reportsTo}}</h4>
-    </div>
-    <h4>Sessions Allotted: {{totalSessionsAlloted}}</h4>
-    <h4>Sessions Attended: {{totalSessionsAttended}}</h4>
-    <h4>Attendance: {{attendancePercentage}}%</h4>
-
-    <div class="sessionDetails ">
-        <h2>Session History</h2>
-        {{#if previousSessions}}
-        <div>
-            {{#each previousSessions}}
-            <h4>Location: {{this.location}}</h4>
-            <h4>Date: {{this.date}}</h4>
-            <h4>Day: {{this.day}}</h4>
-            <h4>Attended: {{this.attended}}</h4>
-            {{/each}}
+    <div class="Pdfbody">
+        <div class="header">
+            <div class="logos">
+                <img class="logo" src="https://truthultimate.com/wp-content/uploads/2021/09/Satyamev-Jayate-Logo.png" alt="">
+                <img class="logo" src="https://res.cloudinary.com/thapar-institutes/image/upload/v1691128355/Horizontal_ibbyah.png" alt="">
+            </div>
         </div>
-        {{/if}}
+        <div style="display: flex; flex-direction: row;">
+        <div class="user">
+            <div class="userDetails">
+                <div style="border: 2px solid #333">
+                <center><h3 class="heading" style="margin-top:0px;">Officer Details</h3></center>
+                <div class="ss">
+                <div class="box">
+                    <div class="title">
+                        <h4>Officer</h4>
+                    </div>
+                    <div class="content">
+                        <!-- <h4><span>{{badgeID}}</span></h4> -->
+                        <h4><span>1</span></h4>
+                    </div>
+                    <div class="icon">
+                        <strong>#</strong>
+                    </div>
+                </div>
+                <div class="box">
+                    <div class="title">
+                        <h4>Officer Name</h4>
+                    </div>
+                    <div class="content">
+                        <h4><span>{{firstName}}</span></h4>
+                        <!-- <h4><span>Rahul</span></h4> -->
+                    </div>
+                    <div class="icon">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                </div>
+                <div class="box">
+                    <div class="title">
+                        <h4>Rank</h4>
+                    </div>
+                    <div class="content">
+                        <h4><span>{{rank}}</span></h4>
+                        <!-- <h4><span>IPS</span></h4> -->
+                    </div>
+                    <div class="icon">
+                        <i class="fa-solid fa-star"></i>
+                    </div>
+                </div>
+            </div>
+                <div class="box">
+                    <div class="title">
+                        <h4>Police Station</h4>
+                    </div>
+                    <div class="content">
+                        <h4><span>{{policeStationId}}</span></h4>
+                        <!-- <h4><span>20001</span></h4> -->
+                    </div>
+                    <div class="icon">
+                        <i class="fa-solid fa-building"></i>
+                    </div>
+                </div>
+                <div class="box">
+                    <div class="title">
+                        <h4>Reports to</h4>
+                    </div>
+                    <div class="content">
+                        <h4><span>{{reportsTo}}</span></h4>
+                        <!-- <h4><span>RAKESH KADAM</span></h4> -->
+                    </div>
+                    <div class="icon">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+            <div class="performance">
+                <div className="title-image">
+                    <center><img src="" alt=""></center>
+                </div>
+                <div style="border: 2px solid #333">
+                <center><h3 class="heading" style="margin-top:0px;">Performance Details</h3></center>
+                <div class="title-box box">
+                    <div class="title">
+                        <h4>Sessions Allotted:</h4>
+                    </div>
+                    <div class="content">
+                        <h4><span>{{totalSessionsAlloted}}</span></h4>
+                        <!-- <h4><span>12</span></h4> -->
+
+                    </div>
+                </div>
+                <div class="title-box box">
+                    <div class="title">
+                        <h4>Sessions Attended:</h4>
+                    </div>
+                    <div class="content">
+                        <h4><span>{{totalSessionsAttended}}</span></h4>
+                        <!-- <h4><span>7</span></h4> -->
+                    </div>
+                </div>
+                <div class="title-box box">
+                    <div class="title">
+                        <h4>Attendance:</h4>
+                    </div>
+                    <div class="content">
+                        <h4><span>{{attendancePercentage}}%</span></h4>
+                        <!-- <h4><span>87%</span></h4> -->
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+        
+        <div class="header">
+            <h2>Session History</h2>
+        </div>
+        <div class="sessions">
+            {{#if previousSessions}} {{#each previousSessions}}
+            <h3 class="heading sess">Session</h3>
+            <div class="sessionDetails">
+                <h4>Location: <span>{{this.location}}</span></h4>
+                <h4>Date: <span>{{this.date}}</span></h4>
+                <h4>Day: <span>{{this.day}}</span></h4>
+                <h4>Attended: <span>{{this.attended}}</span></h4>
+            </div>
+            {{/each}} {{/if}}
+        </div>
     </div>
 </body>
 
