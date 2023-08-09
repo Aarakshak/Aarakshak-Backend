@@ -537,7 +537,6 @@ function checkWithinThreshold(user, session, threshold) {
         return false;
     }
 }
-
 function convertPDFToBytes(filePath) {
     return new Promise((resolve, reject) => {
         fs.readFile(filePath, (err, data) => {
@@ -615,14 +614,13 @@ exports.createpdf = async(req, res) => {
         previousSessions: filteredPreviousSessions,
 
     };
-    res.json(({ data }))
     const options = {
         format: "A4",
         orientation: "portrait",
         header: {
             height: '0mm',
         },
-        
+
 
     };
     const template = handlebars.compile(html, {
@@ -630,11 +628,11 @@ exports.createpdf = async(req, res) => {
             trim: true
         }
     });
-    
+    const path = "./Report" + badgeID + ".pdf"
     const document = {
         html: html,
         data: data,
-        path: sanitize("./Report" + badgeID + ".pdf")
+        path: "./Report" + badgeID + ".pdf"
     };
     const result = await pdf.create(document, options);
     if (!result) {
@@ -642,8 +640,8 @@ exports.createpdf = async(req, res) => {
     }
     convertPDFToBytes(path)
         .then(pdfBytes => {
-            console.log('PDF converted to bytes:', pdfBytes);
-            // Now you can use `pdfBytes` as needed
+            res.json(pdfBytes)
+                // Now you can use `pdfBytes` as needed
         })
         .catch(error => {
             console.error('Error:', error);
@@ -881,13 +879,12 @@ exports.startDutyFromNFC = async(req, res) => {
 
         // console.log('User Sessions:', user.sessions);
         // console.log('Session ID:', session.sessionID);
-        const minus = 5.5 * 60 * 60 * 1000;
         let sessionToUpdate = user.sessions.find(s => s.session.equals(session._id));
         
         console.log('Session to Update:', sessionToUpdate);
         if (sessionToUpdate ) {
             sessionToUpdate.dutyStarted = true;
-            sessionToUpdate.dutyStartTime = new Date() + minus;
+            sessionToUpdate.dutyStartTime = new Date();
             sessionToUpdate.radius = radius;
             await user.save();
             res.json({ message: 'Duty started and session information updated' });
