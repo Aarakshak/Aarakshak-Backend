@@ -630,8 +630,8 @@ exports.getUpcomingSessionsForSurviellance = async(req, res) => {
                                 sessionDate: sessionInfo.sessionDate,
                                 startTime: sessionInfo.startTime-minus ,
                                 endTime: sessionInfo.endTime-minus,
-                                latitude: user.latitude,
-                                longitude: user.longitude,
+                                latitude: user.latitude || sessionInfo.latitude,
+                                longitude: user.longitude || sessionInfo.longitude,
                                 createdBy: sessionInfo.createdBy,
                                 checkpoints: sessionInfo.checkpoints
 

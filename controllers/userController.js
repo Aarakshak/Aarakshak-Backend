@@ -890,3 +890,25 @@ exports.getSessionInfo = async (req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 };
+
+exports.updateUserLocation = async(req, res) => {
+    const { badgeID } = req.params;
+    const { latitude, longitude } = req.body;
+
+    try {
+        const user = await User.findOne({ badgeID });
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        user.latitude = latitude;
+        user.longitude = longitude;
+
+        await user.save();
+        console.log(user.latitude);
+        console.log(user.longitude)
+        res.json({ message: 'User location updated successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Server error' });
+    }
+};
