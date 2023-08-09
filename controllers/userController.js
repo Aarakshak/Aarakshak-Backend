@@ -537,116 +537,118 @@ function checkWithinThreshold(user, session, threshold) {
         return false;
     }
 }
-function convertPDFToBytes(filePath) {
-    return new Promise((resolve, reject) => {
-        fs.readFile(filePath, (err, data) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(data);
-            }
-        });
-    });
-}
-exports.createpdf = async(req, res) => {
 
-    const { badgeID } = req.params
-    const user = await User.findOne({ badgeID: badgeID })
-    if (!user) {
-        return res.status(400).json({ error: 'User not found' })
-    }
-    user.sessions.forEach((session) => {
-        if (session && session.checkpoints && Array.isArray(session.checkpoints)) {
-            session.totalCheckpoints = session.checkpoints.length;
-        }
-    });
-    const previousSessions = await Promise.all(
-        user.sessions.map(async({ session, attended }) => {
-            const sessionID = session;
-            const sessionInfo = await Session.findById(sessionID);
+// function convertPDFToBytes(filePath) {
+//     return new Promise((resolve, reject) => {
+//         fs.readFile(filePath, (err, data) => {
+//             if (err) {
+//                 reject(err);
+//             } else {
+//                 resolve(data);
+//             }
+//         });
+//     });
+// }
 
-            if (!sessionInfo) {
-                return null;
-            }
+// exports.createpdf = async(req, res) => {
 
-            const { sessionLocation, sessionDate } = sessionInfo;
-            const formattedDate = sessionDate ? sessionDate.toISOString().split('T')[0] : null;
-            const day = sessionDate ? sessionDate.toLocaleDateString('en-US', { weekday: 'long' }) : null;
+//     const { badgeID } = req.params
+//     const user = await User.findOne({ badgeID: badgeID })
+//     if (!user) {
+//         return res.status(400).json({ error: 'User not found' })
+//     }
+//     user.sessions.forEach((session) => {
+//         if (session && session.checkpoints && Array.isArray(session.checkpoints)) {
+//             session.totalCheckpoints = session.checkpoints.length;
+//         }
+//     });
+//     const previousSessions = await Promise.all(
+//         user.sessions.map(async({ session, attended }) => {
+//             const sessionID = session;
+//             const sessionInfo = await Session.findById(sessionID);
 
-            return {
-                location: sessionLocation,
-                date: formattedDate,
-                day: day,
-                attended,
-            };
-        })
-    );
+//             if (!sessionInfo) {
+//                 return null;
+//             }
 
-    const filteredPreviousSessions = previousSessions.filter(session => session !== null);
+//             const { sessionLocation, sessionDate } = sessionInfo;
+//             const formattedDate = sessionDate ? sessionDate.toISOString().split('T')[0] : null;
+//             const day = sessionDate ? sessionDate.toLocaleDateString('en-US', { weekday: 'long' }) : null;
 
-    user.sessions.forEach((session) => {
-        if (session && session.totalCheckpoints) {
-            const sessionsAttended = session.attendedCheckpoints >= session.totalCheckpoints * 0.75;
-            session.attended = sessionsAttended;
-        }
-    });
-    await user.save();
+//             return {
+//                 location: sessionLocation,
+//                 date: formattedDate,
+//                 day: day,
+//                 attended,
+//             };
+//         })
+//     );
 
-    const totalSessionsAlloted = user.sessions.length;
-    const totalSessionsAttended = user.sessions.filter(({ attended }) => attended).length;
+//     const filteredPreviousSessions = previousSessions.filter(session => session !== null);
 
-    const attendancePercentage = (totalSessionsAlloted > 0) ?
-        (totalSessionsAttended / totalSessionsAlloted) * 100 :
-        0;
+//     user.sessions.forEach((session) => {
+//         if (session && session.totalCheckpoints) {
+//             const sessionsAttended = session.attendedCheckpoints >= session.totalCheckpoints * 0.75;
+//             session.attended = sessionsAttended;
+//         }
+//     });
+//     await user.save();
 
-    const data = {
+//     const totalSessionsAlloted = user.sessions.length;
+//     const totalSessionsAttended = user.sessions.filter(({ attended }) => attended).length;
 
-        badgeID: user.badgeID,
-        firstName: user.firstName,
-        surname: user.surname,
-        rank: user.rank,
-        pic: user.profilePic,
-        gender: user.gender,
-        reportsTo: user.reportsTo,
-        attendancePercentage,
-        totalSessionsAttended,
-        totalSessionsAlloted,
-        previousSessions: filteredPreviousSessions,
+//     const attendancePercentage = (totalSessionsAlloted > 0) ?
+//         (totalSessionsAttended / totalSessionsAlloted) * 100 :
+//         0;
 
-    };
-    const options = {
-        format: "A4",
-        orientation: "portrait",
-        header: {
-            height: '0mm',
-        },
+//     const data = {
+
+//         badgeID: user.badgeID,
+//         firstName: user.firstName,
+//         surname: user.surname,
+//         rank: user.rank,
+//         pic: user.profilePic,
+//         gender: user.gender,
+//         reportsTo: user.reportsTo,
+//         attendancePercentage,
+//         totalSessionsAttended,
+//         totalSessionsAlloted,
+//         previousSessions: filteredPreviousSessions,
+
+//     };
+//     const options = {
+//         format: "A4",
+//         orientation: "portrait",
+//         header: {
+//             height: '0mm',
+//         },
 
 
-    };
-    const template = handlebars.compile(html, {
-        allowedProtoMethods: {
-            trim: true
-        }
-    });
-    const path = "./Report" + badgeID + ".pdf"
-    const document = {
-        html: html,
-        data: data,
-        path: "./Report" + badgeID + ".pdf"
-    };
-    const result = await pdf.create(document, options);
-    if (!result) {
-        console.error(error);
-    }
-    convertPDFToBytes(path)
-        .then(pdfBytes => {
-            res.json(pdfBytes)
-                // Now you can use `pdfBytes` as needed
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
-}
+//     };
+//     const template = handlebars.compile(html, {
+//         allowedProtoMethods: {
+//             trim: true
+//         }
+//     });
+//     const path = "./Report" + badgeID + ".pdf"
+//     const document = {
+//         html: html,
+//         data: data,
+//         path: "./Report" + badgeID + ".pdf"
+//     };
+//     const result = await pdf.create(document, options);
+//     if (!result) {
+//         console.error(error);
+//     }
+//     convertPDFToBytes(path)
+//         .then(pdfBytes => {
+//             res.json(pdfBytes)
+//                 // Now you can use `pdfBytes` as needed
+//         })
+//         .catch(error => {
+//             console.error('Error:', error);
+//         });
+// }
 
 // exports.checkInCheckpoint = async(req, res) => {
 //     try {
