@@ -790,7 +790,26 @@ exports.getStats = async(req, res) => {
         let resolvedIssues = [];
         let issuesRaisedToday = [];
         let attendances = [];
-        const load = [];
+        const load = [
+            { userID: 3, loadFactor: 0.85 },
+            { userID: 10, loadFactor: 0.89 },
+            { userID: 5, loadFactor: 1.28 },
+            { userID: 6, loadFactor: 1.16 },
+            { userID: 7, loadFactor: 1.16 },
+            { userID: 8, loadFactor: 1.49 },
+            { userID: 9, loadFactor: 1.07 },
+            { userID: 11, loadFactor: 0.94 },
+            { userID: 12, loadFactor: 1.41 },
+            { userID: 13, loadFactor: 0.61 },
+            { userID: 14, loadFactor: 1.32 },
+            { userID: 15, loadFactor: 1.3 },
+            { userID: 16, loadFactor: 0.99 },
+            { userID: 17, loadFactor: 0.99 },
+            { userID: 18, loadFactor: 1.2 },
+            { userID: 19, loadFactor: 0.77 },
+            { userID: 20, loadFactor: 1.34 },
+            { userID: 4, loadFactor: 0.96 }
+          ];
         let totalCheckpoints = 0;
         let totalCheckpointsAttended = 0;
         const minus = 5.5 * 60 * 60 * 1000;
@@ -805,6 +824,7 @@ exports.getStats = async(req, res) => {
         for (const user of users) {
             // console.log(user);
             load.push({ userID: user.badgeID, loadFactor: user.loadFactor });
+            console.log(user.loadFactor)
             for (const userSession of user.sessions) {
                 const sessionInfo = await Session.findById(userSession.session);
                 if (!sessionInfo) {
