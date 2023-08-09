@@ -71,9 +71,9 @@ exports.loginUser = async(req, res) => {
 
 exports.verifyOTP = async(req, res) => {
     try {
-        let { otp } = req.body;
+        let { adminId, otp } = req.body;
 
-        const admin = await Admin.findOne({ adminId: adminID });
+        const admin = await Admin.findOne({ adminId });
         if (!admin) {
             return res.status(250).json({ error: 'Admin not found' })
         }
@@ -93,7 +93,7 @@ exports.verifyOTP = async(req, res) => {
         );
         admin.jwtToken = token;
         await admin.save();
-        res.json({ token, adminId: admin.adminId });
+        res.json({ token, adminId: admin.adminId, firstName: admin.firstName  });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Server error' });
@@ -891,3 +891,83 @@ exports.getStats = async(req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 };
+
+exports.getNearestUser = async(req, res) => {
+    const userLocationArray = [
+        { userID: 3, latitude: 34.0522, longitude: -118.2437 },
+        { userID: 10, latitude: 40.7128, longitude: -74.0060 },
+        { userID: 5, latitude: 51.5074, longitude: -0.1278 },
+        { userID: 6, latitude: 48.8566, longitude: 2.3522 },
+        { userID: 7, latitude: 52.5200, longitude: 13.4050 },
+        { userID: 8, latitude: 37.7749, longitude: -122.4194 },
+        { userID: 9, latitude: 35.6895, longitude: 139.6917 },
+        { userID: 11, latitude: -33.8688, longitude: 151.2093 },
+        { userID: 12, latitude: 25.276987, longitude: 55.296249 },
+        { userID: 13, latitude: -22.9068, longitude: -43.1729 },
+        { userID: 14, latitude: 41.9028, longitude: 12.4964 },
+        { userID: 15, latitude: 19.4326, longitude: -99.1332 },
+        { userID: 16, latitude: -34.6076, longitude: -58.4371 },
+        { userID: 17, latitude: 55.7558, longitude: 37.6176 },
+        { userID: 18, latitude: 37.5665, longitude: 126.9780 },
+        { userID: 19, latitude: 43.6532, longitude: -79.3832 },
+        { userID: 20, latitude: 35.682839, longitude: 139.759455 },
+        { userID: 4, latitude: -33.4489, longitude: -70.6693 }
+    ];
+    const { adminId, badgeID } = req.params;
+    const admin = await Admin.findOne({ adminId: adminId });
+    if (!admin) {
+        return res.status(404).json({ error: 'Admin not found' });
+    }
+    const user = await User.findOne({ badgeID });
+    if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+    }
+
+    const userEntry = userLocationArray.find(entry => entry.userID === parseInt(badgeID));
+
+    if (!userEntry) {
+        return res.status(404).json({ error: 'User not found in location array' });
+    }
+
+    const userPosition = { lat: userEntry.latitude, lng: userEntry.longitude };
+
+    let nearestUserID = null;
+    let nearestDistance = Infinity;
+    let ans = [];
+    for (const entry of userLocationArray) {
+        console.log(entry)
+        console.log(entry.userID)
+        console.log(badgeID)
+        if (entry.userID == badgeID)
+            continue;
+        if (entry.userID !== badgeID) {
+            const otherUserPosition = { lat: entry.latitude, lng: entry.longitude };
+            const distance = await haversine_distance(userPosition, otherUserPosition);
+            // console.log(distance)
+            if (distance < nearestDistance) {
+                // console.log(distance)
+                nearestDistance = distance;
+                nearestUserID = entry.userID;
+            }
+        }
+    }
+
+    if (nearestUserID === null) {
+        return res.status(404).json({ error: 'Nearest user not found' });
+    }
+
+    res.json({ nearestUserID, nearestDistance });
+};
+
+
+async function haversine_distance(mk1, mk2) {
+    var R = 3958.8; // Radius of the Earth in miles
+    var rlat1 = mk1.lat * (Math.PI / 180); // Convert degrees to radians
+    var rlat2 = mk2.lat * (Math.PI / 180); // Convert degrees to radians
+    var difflat = rlat2 - rlat1; // Radian difference (latitudes)
+    var difflon = (mk2.lng - mk1.lng) * (Math.PI / 180); // Radian difference (longitudes)
+
+    var d = 2 * R * Math.asin(Math.sqrt(Math.sin(difflat / 2) * Math.sin(difflat / 2) + Math.cos(rlat1) * Math.cos(rlat2) * Math.sin(difflon / 2) * Math.sin(difflon / 2)));
+    // console.log(d)
+    return d;
+}

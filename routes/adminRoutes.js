@@ -19,5 +19,6 @@ router.get('/surveillance/:adminId', adminController.getUpcomingSessionsForSurvi
 router.get('/get-sessions/:adminId', adminController.getAllSessions)
 router.get('/get-users/:adminId', adminController.getUsersUnderAdmin);
 router.get('/statistics/:adminId', adminController.getStats);
+router.get('/get-nearest-user/:adminId/:badgeID', adminController.getNearestUser);
     // router.post('/create-admin', adminController.createAdmin);
 module.exports = router;
