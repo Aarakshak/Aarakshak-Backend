@@ -451,59 +451,6 @@ exports.assignUsersToSession = async (req, res) => {
     }
 };
 
-
-// exports.assignUsersToSession = async(req, res) => {
-//     try {
-//         const { adminId } = req.params;
-//         const { sessionId, userIds, description } = req.body;
-
-//         const admin = await Admin.findOne({ adminId: adminId });
-//         if (!admin) {
-//             return res.status(250).json({ error: 'Admin not found' });
-//         }
-
-//         const session = await Session.findOne({ sessionID: sessionId });
-//         if (!session) {
-//             return res.status(250).json({ error: 'Session not found' });
-//         }
-
-//         const users = await User.find({ badgeID: { $in: userIds } });
-
-//         if (!users || users.length === 0) {
-//             return res.status(250).json({ error: 'Users not found' });
-//         }
-
-//         for (const user of users) {
-//             if (user.sessions.some((userSession) => userSession.session && userSession.session.equals(session._id))) {
-//                 return res.status(250).json({ error: 'Session already assigned to the user' });
-//             }
-//         }
-//         if (!session) {
-//             return res.status(250).json({ error: 'Session not found' });
-//         }
-
-//         for (const user of users) {
-//             if (user.sessions.some((userSession) => userSession.session === sessionId)) {
-//                 continue;
-//             }
-
-//             user.sessions.push({
-//                 session: session._id,
-//                 attended: false,
-//             });
-
-//             user.reportsTo = adminId;
-
-//             await user.save();
-//         }
-
-//         res.json({ message: 'Users assigned to sessions successfully' });
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).json({ error: 'Server error' });
-//     }
-// };
-
 exports.getAllIssues = async(req, res) => {
     try {
         const { adminId } = req.params;
@@ -517,7 +464,12 @@ exports.getAllIssues = async(req, res) => {
         const allIssues = usersWithIssues.reduce((issuesList, user) => {
             if (user.issues && Array.isArray(user.issues)) {
                 user.issues.forEach((issue) => {
-                    issuesList.push(issue);
+                    issuesList.push({
+                        badgeID: user.badgeID,
+                        profilePic: user.profilePic,
+                        firstName: user.firstName,
+                        issue: issue,
+                        });
                 });
             }
             return issuesList;
