@@ -7,7 +7,6 @@ dotenv.config()
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const secretKey = crypto.randomBytes(64).toString('hex');
-var SqlString = require('sqlstring');
 
 const nodemailer = require('nodemailer');
 
@@ -55,15 +54,15 @@ exports.loginUser = async(req, res) => {
         if (password !== admin.password) {
             return res.status(250).json({ error: 'Invalid credentials' });
         }
-        // const newOTP = generateOTP();
-        // admin.otp = newOTP;
-        // admin.otpExpiration = Date.now() + 5 * 60 * 1000;
+        const newOTP = generateOTP();
+        admin.otp = newOTP;
+        admin.otpExpiration = Date.now() + 5 * 60 * 1000;
 
-        // await sendOTPByEmail(emailId, newOTP);
+        await sendOTPByEmail(emailId, newOTP);
 
         admin = await admin.save();
 
-        res.json({ message: 'Login successfull', adminID: admin.adminId, firstName: admin.firstName });
+        res.json({ message: 'OTP sent', adminID: admin.adminId, firstName: admin.firstName });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Server error' });
@@ -87,7 +86,7 @@ exports.verifyOTP = async(req, res) => {
         admin.otpExpiration = undefined;
 
         await admin.save();
-        const token = jwt.sign({ emailId: admin.emailId, adminId: admin.adminId },
+        const token = jwt.sign({ emailId: admin.emailId, adminId: admin.adminId, firstName: admin.firstName  },
             secretKey, {
                 expiresIn: '1d',
             }
@@ -279,6 +278,7 @@ exports.addSessionByAdmin = async(req, res) => {
         console.log(currentDateUTC);
     
         const startTimeTimestamp = new Date(startTime).getTime();
+        console
         const endTimeTimestamp = new Date(endTime).getTime();
 
         if (startTimeTimestamp <= currentDateUTC || endTimeTimestamp <= currentDateUTC) {
@@ -771,7 +771,6 @@ exports.createAdmin = async(req, res) => {
         res.status(500).json({ error: 'Server error' })
     }
 }
-
 exports.getStats = async(req, res) => {
     try {
         const { adminId } = req.params;
@@ -784,7 +783,6 @@ exports.getStats = async(req, res) => {
         if (!users || users.length === 0) {
             return res.status(404).json({ error: "Users not found" });
         }
-
         const currentDate = new Date();
         let ongoingSessions = [];
         let usersRightNow = [];
@@ -792,6 +790,7 @@ exports.getStats = async(req, res) => {
         let resolvedIssues = [];
         let issuesRaisedToday = [];
         let attendances = [];
+        const load = [];
         let totalCheckpoints = 0;
         let totalCheckpointsAttended = 0;
         const minus = 5.5 * 60 * 60 * 1000;
@@ -805,6 +804,7 @@ exports.getStats = async(req, res) => {
         }
         for (const user of users) {
             // console.log(user);
+            load.push({ userID: user.badgeID, loadFactor: user.loadFactor });
             for (const userSession of user.sessions) {
                 const sessionInfo = await Session.findById(userSession.session);
                 if (!sessionInfo) {
@@ -823,16 +823,18 @@ exports.getStats = async(req, res) => {
                     usersInNext12Hours.push(user);
                 }
             }
-            for (const issue of user.issues) {
-                console.log(issue);
-                const raisedTime = issue.raised.getTime();
-                if (issue.resolved) {
-                    resolvedIssues.push(issue);
-                }
-                if (raisedTime >= currentTime && raisedTime - currentTime <= 2 * twelve) {
-                    issuesRaisedToday.push(issue);
-                }
-            }
+            // for (const issue of user.issues) {
+            //     if (issue === [])
+            //         continue;
+            //     console.log(issue);
+            //     const raisedTime = issue.raised.getTime();
+            //     if (issue.resolved) {
+            //         resolvedIssues.push(issue);
+            //     }
+            //     if (raisedTime >= currentTime && raisedTime - currentTime <= 2 * twelve) {
+            //         issuesRaisedToday.push(issue);
+            //     }
+            // }
 
         }
         const usersSortedByAttendanceRatio = users.slice().sort((userA, userB) => {
@@ -845,14 +847,24 @@ exports.getStats = async(req, res) => {
             return userB.totalHoursOnDuty - userA.totalHoursOnDuty; // Sort in descending order
         });
         const response = {
-            dutiesNow: usersRightNow,
+            load: load,
+            dutiesNow: usersRightNow.length,
             usersInNext12Hours: usersInNext12Hours,
-            resolvedIssues: resolvedIssues,
+            resolvedIssues: resolvedIssues.length,
             issueRaisedToday: issuesRaisedToday,
             usersSortedByAttendanceRatio: usersSortedByAttendanceRatio,
             usersSortedByTotalHours: usersSortedByTotalHours,
-            ongoingSessions: ongoingSessions
+            ongoingSessions: ongoingSessions.length
         }
+        console.log(load);
+        // console.log(usersSortedByAttendanceRatio);
+        // console.log(usersRightNow);
+        // console.log(usersInNext12Hours.length);
+        // console.log(resolvedIssues.length);
+        // console.log(issuesRaisedToday.length);
+        // console.log(usersSortedByAttendanceRatio.length);
+        // console.log(usersSortedByTotalHours.length);
+        // console.log(ongoingSessions.length);
         res.json(response);
     } catch (error) {
         console.error(error);
