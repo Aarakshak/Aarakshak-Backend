@@ -881,13 +881,13 @@ exports.startDutyFromNFC = async(req, res) => {
 
         // console.log('User Sessions:', user.sessions);
         // console.log('Session ID:', session.sessionID);
-
+        const minus = 5.5 * 60 * 60 * 1000;
         let sessionToUpdate = user.sessions.find(s => s.session.equals(session._id));
         
         console.log('Session to Update:', sessionToUpdate);
         if (sessionToUpdate ) {
             sessionToUpdate.dutyStarted = true;
-            sessionToUpdate.dutyStartTime = new Date();
+            sessionToUpdate.dutyStartTime = new Date() + minus;
             sessionToUpdate.radius = radius;
             await user.save();
             res.json({ message: 'Duty started and session information updated' });

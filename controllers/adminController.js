@@ -314,8 +314,7 @@ exports.getPoliceStations = async (req, res) => {
     }
 };
 
-
-exports.assignUsersToSession = async(req, res) => {
+exports.assignUsersToSession = async (req, res) => {
     try {
         const { adminId } = req.params;
         const { sessionId, userIds, description } = req.body;
@@ -337,12 +336,26 @@ exports.assignUsersToSession = async(req, res) => {
         }
 
         for (const user of users) {
-            if (user.sessions.some((userSession) => userSession.session && userSession.session.equals(session._id))) {
-                return res.status(250).json({ error: 'Session already assigned to the user' });
+            const conflictingSession = user.sessions.find((userSession) => {
+    
+                const userSessionStartTime = userSession.session.startTime;
+                console.log(userSessionStartTime);
+                const userSessionEndTime = userSession.session.endTime;
+                console.log(userSessionEndTime)
+                const newSessionStartTime = session.startTime;
+                const newSessionEndTime = session.endTime;
+
+                return (
+                    userSession.session !== sessionId && // Exclude the current session
+                    ((newSessionStartTime >= userSessionStartTime && newSessionStartTime < userSessionEndTime) ||
+                    (newSessionEndTime > userSessionStartTime && newSessionEndTime <= userSessionEndTime) ||
+                    (newSessionStartTime <= userSessionStartTime && newSessionEndTime >= userSessionEndTime))
+                );
+            });
+
+            if (conflictingSession) {
+                return res.status(250).json({ error: 'User is already assigned to a session at the same time' });
             }
-        }
-        if (!session) {
-            return res.status(250).json({ error: 'Session not found' });
         }
 
         for (const user of users) {
@@ -366,6 +379,59 @@ exports.assignUsersToSession = async(req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 };
+
+
+// exports.assignUsersToSession = async(req, res) => {
+//     try {
+//         const { adminId } = req.params;
+//         const { sessionId, userIds, description } = req.body;
+
+//         const admin = await Admin.findOne({ adminId: adminId });
+//         if (!admin) {
+//             return res.status(250).json({ error: 'Admin not found' });
+//         }
+
+//         const session = await Session.findOne({ sessionID: sessionId });
+//         if (!session) {
+//             return res.status(250).json({ error: 'Session not found' });
+//         }
+
+//         const users = await User.find({ badgeID: { $in: userIds } });
+
+//         if (!users || users.length === 0) {
+//             return res.status(250).json({ error: 'Users not found' });
+//         }
+
+//         for (const user of users) {
+//             if (user.sessions.some((userSession) => userSession.session && userSession.session.equals(session._id))) {
+//                 return res.status(250).json({ error: 'Session already assigned to the user' });
+//             }
+//         }
+//         if (!session) {
+//             return res.status(250).json({ error: 'Session not found' });
+//         }
+
+//         for (const user of users) {
+//             if (user.sessions.some((userSession) => userSession.session === sessionId)) {
+//                 continue;
+//             }
+
+//             user.sessions.push({
+//                 session: session._id,
+//                 attended: false,
+//             });
+
+//             user.reportsTo = adminId;
+
+//             await user.save();
+//         }
+
+//         res.json({ message: 'Users assigned to sessions successfully' });
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ error: 'Server error' });
+//     }
+// };
 
 exports.getAllIssues = async(req, res) => {
     try {
