@@ -14,7 +14,6 @@ const sessionSchema = new Schema({
 
   sessionDate: {
     type: Date,
-    required: 'Date cannot be empty',
   },
   startTime: {
     type: Date,
@@ -23,6 +22,9 @@ const sessionSchema = new Schema({
   endTime: {
     type: Date,
     required: 'End time cannot be empty',
+  },
+  endDate: {
+    type: Date,
   },
   latitude: {
     type: Number,
@@ -42,6 +44,9 @@ const sessionSchema = new Schema({
   },
   radius : {
     type: Number,
+  },
+  emergency: {
+    type: Boolean
   }
 });
 
