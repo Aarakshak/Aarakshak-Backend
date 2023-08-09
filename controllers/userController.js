@@ -748,157 +748,6 @@ exports.checkInCheckpoint = async(req, res) => {
 };
 
 
-// exports.getUpcomingSessionsForSurviellance = async(req, res) => {
-//     try {
-//         const { adminId } = req.params;
-//         const admin = await Admin.findOne({ adminId: adminId });
-//         if (!admin) {
-//             return res.status(404).json({ error: 'Admin not found' });
-//         }
-
-//         const users = await User.find({ policeStationId: { $in: admin.policeStation.map(ps => ps.policeStationId) } });
-
-//         const minus = 5.5 * 60 * 60 * 1000;
-//         const currentDate = new Date();
-//         const twelve = 12 * 60 * 60 * 1000;
-//         let usersOfInterest = [];
-//         let currentSessions = [];
-//         let ans = [];
-//         let obj = null;
-//         for (const user of users) {
-//             for (const { session }
-//                 of user.sessions) {
-//                 const sessionInfo = await Session.findById(session._id);
-//                 if (sessionInfo) {
-//                     const sessionStartTime = sessionInfo.startTime;
-//                     const sessionEndTime = sessionInfo.endTime;
-
-//                     const currentTime = currentDate.getTime();
-//                     if (sessionEndTime < currentTime) {
-//                         continue;
-//                     } else if (
-//                         sessionStartTime <= currentTime &&
-//                         currentTime <= sessionEndTime
-//                     ) {
-//                         obj = {
-//                                 userid: user._id,
-//                                 badgeID: 3,
-//                                 firstName: user.firstName,
-//                                 surname: user.surname,
-//                                 password: user.password,
-//                                 rank: user.rank,
-//                                 profilePic: user.profilePic,
-//                                 policeStationId: user.policeStationId,
-//                                 phoneNo: user.phoneNo,
-//                                 emailId: user.emailId,
-//                                 gender: user.gender,
-//                                 reportsTo: user.reportsTo,
-//                                 sessions: user.sessions,
-//                                 issues: user.issues,
-//                                 session_id: sessionInfo._id,
-//                                 sessionID: sessionInfo.sessionID,
-//                                 sessionLocation: sessionInfo.sessionLocation,
-//                                 sessionDate: sessionInfo.sessionDate,
-//                                 startTime: sessionInfo.startTime,
-//                                 endTime: sessionInfo.endTime,
-//                                 latitude: sessionInfo.latitude,
-//                                 longitude: sessionInfo.longitude,
-//                                 createdBy: sessionInfo.createdBy,
-//                                 checkpoints: sessionInfo.checkpoints
-
-//                             }
-//                             // currentSessions.push(sessionInfo);
-//                             // usersOfInterest.push(users);
-//                         ans.push(obj)
-//                     } else if (
-//                         sessionStartTime >= currentTime &&
-//                         sessionStartTime - currentTime <= twelve
-//                     ) {
-//                         obj = {
-//                             userid: user._id,
-//                             badgeID: 3,
-//                             firstName: user.firstName,
-//                             surname: user.surname,
-//                             password: user.password,
-//                             rank: user.rank,
-//                             profilePic: user.profilePic,
-//                             policeStationId: user.policeStationId,
-//                             phoneNo: user.phoneNo,
-//                             emailId: user.emailId,
-//                             gender: user.gender,
-//                             reportsTo: user.reportsTo,
-//                             sessions: user.sessions,
-//                             issues: user.issues,
-//                             session_id: sessionInfo._id,
-//                             sessionID: sessionInfo.sessionID,
-//                             sessionLocation: sessionInfo.sessionLocation,
-//                             sessionDate: sessionInfo.sessionDate,
-//                             startTime: sessionInfo.startTime,
-//                             endTime: sessionInfo.endTime,
-//                             latitude: sessionInfo.latitude,
-//                             longitude: sessionInfo.longitude,
-//                             createdBy: sessionInfo.createdBy,
-//                             checkpoints: sessionInfo.checkpoints
-
-//                         }
-//                         ans.push(obj)
-//                             // currentSessions.push(sessionInfo);
-//                             // usersOfInterest.push(users);
-//                     }
-//                 }
-//             }
-//         }
-
-//         res.json({
-//             ans
-//         });
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).json({ error: 'Server error' });
-//     }
-// };
-
-exports.startDutyFromNFC = async(req, res) => {
-    try {
-        const { badgeID } = req.params;
-        const { latitude, longitude, radius } = req.body;
-
-        const user = await User.findOne({ badgeID });
-
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-
-        const session = await Session.findOne({
-            sessionDate: { $gte: new Date() },
-            latitude: latitude,
-            longitude: longitude,
-        });
-
-        if (!session) {
-            return res.status(250).json({ error: 'Session not found for user at the given location' });
-        }
-
-        // console.log('User Sessions:', user.sessions);
-        // console.log('Session ID:', session.sessionID);
-        let sessionToUpdate = user.sessions.find(s => s.session.equals(session._id));
-        
-        console.log('Session to Update:', sessionToUpdate);
-        if (sessionToUpdate ) {
-            sessionToUpdate.dutyStarted = true;
-            sessionToUpdate.dutyStartTime = new Date();
-            sessionToUpdate.radius = radius;
-            await user.save();
-            res.json({ message: 'Duty started and session information updated' });
-        } else {
-            res.status(500).json({ error: 'Server error' });
-        }
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Server error' });
-    }
-};
-
 
 // exports.startDutyFromNFC = async(req, res) => {
 //     try {
@@ -911,34 +760,81 @@ exports.startDutyFromNFC = async(req, res) => {
 //             return res.status(404).json({ error: 'User not found' });
 //         }
 
+//         console.log(latitude);
+//         console.log(longitude);
+
 //         const session = await Session.findOne({
 //             sessionDate: { $gte: new Date() },
 //             latitude: latitude,
 //             longitude: longitude,
 //         });
 
+//         console.log()
+
 //         if (!session) {
 //             return res.status(250).json({ error: 'Session not found for user at the given location' });
 //         }
-//         console.log('User Sessions:', user.sessions);
-//         console.log('Session ID:', session.sessionID);
+
 
 //         let sessionToUpdate = user.sessions.find(s => s.session.equals(session._id));
         
 //         console.log('Session to Update:', sessionToUpdate);
-//         if (sessionToUpdate) {
+//         if (sessionToUpdate ) {
 //             sessionToUpdate.dutyStarted = true;
 //             sessionToUpdate.dutyStartTime = new Date();
 //             sessionToUpdate.radius = radius;
 //             await user.save();
+//             res.json({ message: 'Duty started and session information updated' });
+//         } else {
+//             res.status(500).json({ error: 'Server error' });
 //         }
-//         res.json({ message: 'Duty started and session information updated' });
 //     } catch (error) {
 //         console.error(error);
 //         res.status(500).json({ error: 'Server error' });
 //     }
 // };
+exports.startDutyFromNFC = async (req, res) => {
+    try {
+        const { badgeID } = req.params;
+        const { sessionID, latitude, longitude, radius } = req.body;
 
+        const user = await User.findOne({ badgeID });
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        const session = await Session.findOne({
+            sessionID
+        });
+
+        if (!session) {
+            return res.status(250).json({ error: 'Session not found for user at the given location' });
+        }
+
+        console.log('User Sessions:', user.sessions);
+        console.log('Session ID:', session.sessionID);
+
+        const sessionToUpdate = user.sessions.find(s => s.session.equals(session._id));
+
+        console.log('Session to Update:', sessionToUpdate);
+        if (sessionToUpdate) {
+            sessionToUpdate.dutyStarted = true;
+            sessionToUpdate.dutyStartTime = new Date();
+            sessionToUpdate.radius = radius;
+
+            
+            await user.save();
+
+            res.json({ message: 'Duty started and session information updated' });
+        } else {
+            res.status(500).json({ error: 'Session not found in user sessions' });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Server error' });
+    }
+};
 
 exports.endDuty = async(req, res) => {
     try {
