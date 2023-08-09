@@ -273,7 +273,7 @@ function generateCheckPoints(startTime, endTime, numCheckPoints) {
 exports.addSessionByAdmin = async(req, res) => {
     try {
         const { adminId } = req.params;
-        const { sessionLocation, startTime, endTime, latitude, longitude, description, s } = req.body;
+        const { sessionLocation, startTime, endTime, latitude, longitude, description, emergency } = req.body;
 
         const currentDateUTC = new Date().getTime();
         console.log(currentDateUTC);
@@ -306,6 +306,7 @@ exports.addSessionByAdmin = async(req, res) => {
             createdBy: adminId,
             checkpoints: randomCheckpoints,
             description:description,
+            emergency
         });
 
         await session.save();
