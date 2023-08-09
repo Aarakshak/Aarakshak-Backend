@@ -13,8 +13,6 @@ router.get('/profile/:badgeID', userController.getProfileOfUserByBadgeID);
 router.get('/notifications/:badgeID', userController.getUserNotifications);
 router.patch('/notifications/:badgeID/:notificationID', userController.markNotificatonsReaded);
 router.post('/checkIn/:badgeID/:sessionID', userController.checkInCheckpoint);
-r
-// router.get('/createPdf/:badgeID', userController.createpdf);
 router.post('/start-duty/:badgeID', userController.startDutyFromNFC);
 router.post('/end-duty/:badgeId', userController.endDuty);
 router.patch('/update-location/:badgeID', userController.updateUserLocation);
