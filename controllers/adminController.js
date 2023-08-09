@@ -659,7 +659,7 @@ exports.getUpcomingSessionsForSurviellance = async(req, res) => {
                     ) {
                         obj = {
                                 userid: user._id,
-                                badgeID: 3,
+                                badgeID: user.badgeID,
                                 firstName: user.firstName,
                                 surname: user.surname,
                                 password: user.password,
@@ -684,8 +684,6 @@ exports.getUpcomingSessionsForSurviellance = async(req, res) => {
                                 checkpoints: sessionInfo.checkpoints
 
                             }
-                            // currentSessions.push(sessionInfo);
-                            // usersOfInterest.push(users);
                         ans.push(obj)
                     } else if (
                         sessionStartTime >= currentTime &&
