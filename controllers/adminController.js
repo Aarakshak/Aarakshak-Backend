@@ -1,13 +1,15 @@
 const User = require('../models/schema');
 const Session = require('../models/session');
 const Admin = require('../models/adminModel');
-
+const pdf = require("pdf-creator-node");
+const fs = require("fs");
+const handlebars = require("handlebars");
+var html = fs.readFileSync('template.html', 'utf8')
 const dotenv = require('dotenv');
 dotenv.config()
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const secretKey = crypto.randomBytes(64).toString('hex');
-
 const nodemailer = require('nodemailer');
 
 function generateOTP() {
@@ -669,8 +671,7 @@ exports.getUpcomingSessionsForSurviellance = async(req, res) => {
 
                         }
                         ans.push(obj)
-                            // currentSessions.push(sessionInfo);
-                            // usersOfInterest.push(users);
+                
                     }
                 }
             }
@@ -702,7 +703,7 @@ exports.createAdmin = async(req, res) => {
     try {
         const { adminId, firstName, emailId, password, designation } = req.body;
         const existingAdmin = await Admin.findOne({ $or: [{ adminId }, { emailId }] });
-        if (existingAdmin) {
+        if (existingAdmin) {pdf
             return res.status(250).json({ error: 'Admin with the same adminId or emailId already exists' });
         }
         const admin = new Admin({
@@ -721,6 +722,7 @@ exports.createAdmin = async(req, res) => {
         res.status(500).json({ error: 'Server error' })
     }
 }
+
 exports.getStats = async(req, res) => {
     try {
         const { adminId } = req.params;
@@ -740,26 +742,7 @@ exports.getStats = async(req, res) => {
         let resolvedIssues = [];
         let issuesRaisedToday = [];
         let attendances = [];
-        const load = [
-            { userID: 3, loadFactor: 0.85 },
-            { userID: 10, loadFactor: 0.89 },
-            { userID: 5, loadFactor: 1.28 },
-            { userID: 6, loadFactor: 1.16 },
-            { userID: 7, loadFactor: 1.16 },
-            { userID: 8, loadFactor: 1.49 },
-            { userID: 9, loadFactor: 1.07 },
-            { userID: 11, loadFactor: 0.94 },
-            { userID: 12, loadFactor: 1.41 },
-            { userID: 13, loadFactor: 0.61 },
-            { userID: 14, loadFactor: 1.32 },
-            { userID: 15, loadFactor: 1.3 },
-            { userID: 16, loadFactor: 0.99 },
-            { userID: 17, loadFactor: 0.99 },
-            { userID: 18, loadFactor: 1.2 },
-            { userID: 19, loadFactor: 0.77 },
-            { userID: 20, loadFactor: 1.34 },
-            { userID: 4, loadFactor: 0.96 }
-          ];
+        const load = [];
         let totalCheckpoints = 0;
         let totalCheckpointsAttended = 0;
         const minus = 5.5 * 60 * 60 * 1000;
@@ -773,8 +756,47 @@ exports.getStats = async(req, res) => {
         }
         for (const user of users) {
             // console.log(user);
-            load.push({ userID: user.badgeID, loadFactor: user.loadFactor });
-            console.log(user.loadFactor)
+            let totalHoursOfService = 0;
+            for (const userSession of user.sessions) {
+                const sessionInfo = await Session.findById(userSession.session);
+                if (!sessionInfo) {
+                    console.log("Session not found");
+                    continue; // Skip to the next session
+                }
+
+                const sessionStartTime = sessionInfo.startTime.getTime();
+                const sessionEndTime = sessionInfo.endTime.getTime();
+                const sessionDurationHours = (sessionEndTime - sessionStartTime) / (60 * 60 * 1000); // Convert to hours
+                totalHoursOfService += sessionDurationHours;
+            }
+            const numberOfSessions = user.sessions.length;
+            const loadFactor = totalHoursOfService / (numberOfSessions * 8);
+            const mean = totalHoursOfService / numberOfSessions;
+            console.log(mean);
+            let variance = 0;
+            for (const userSession of user.sessions) {
+                const sessionInfo = await Session.findById(userSession.session);
+                if (!sessionInfo) {
+                    console.log("Session not found");
+                    continue; // Skip to the next session
+                }
+
+                const sessionStartTime = sessionInfo.startTime.getTime();
+                const sessionEndTime = sessionInfo.endTime.getTime();
+                const sessionDurationHours = (sessionEndTime - sessionStartTime) / (60 * 60 * 1000); // Convert to hours
+                // console.log(sessionStartTime);
+                // console.log(sessionEndTime);
+                console.log(sessionDurationHours);
+                variance = variance + (sessionDurationHours - mean) * (sessionDurationHours - mean);
+                // console.log((sessionDurationHours - mean) * (sessionDurationHours - mean));
+                // console.log(variance);
+                variance = variance / (numberOfSessions - 1);
+            }
+
+
+            load.push({ userID: user.badgeID, loadFactor: loadFactor, variance: variance });
+
+
             for (const userSession of user.sessions) {
                 const sessionInfo = await Session.findById(userSession.session);
                 if (!sessionInfo) {
@@ -793,18 +815,16 @@ exports.getStats = async(req, res) => {
                     usersInNext12Hours.push(user);
                 }
             }
-            // for (const issue of user.issues) {
-            //     if (issue === [])
-            //         continue;
-            //     console.log(issue);
-            //     const raisedTime = issue.raised.getTime();
-            //     if (issue.resolved) {
-            //         resolvedIssues.push(issue);
-            //     }
-            //     if (raisedTime >= currentTime && raisedTime - currentTime <= 2 * twelve) {
-            //         issuesRaisedToday.push(issue);
-            //     }
-            // }
+            for (const issue of user.issues) {
+                console.log(issue);
+                const raisedTime = issue.raised.getTime();
+                if (issue.resolved) {
+                    resolvedIssues.push(issue);
+                }
+                if (raisedTime >= currentTime && raisedTime - currentTime <= 2 * twelve) {
+                    issuesRaisedToday.push(issue);
+                }
+            }
 
         }
         const usersSortedByAttendanceRatio = users.slice().sort((userA, userB) => {
@@ -841,63 +861,194 @@ exports.getStats = async(req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 };
+exports.createpdf = async(req, res) => {
+
+    const { badgeID } = req.params
+    const user = await User.findOne({ badgeID: badgeID })
+    if (!user) {
+        return res.status(400).json({ error: 'User not found' })
+    }
+    user.sessions.forEach((session) => {
+        if (session && session.checkpoints && Array.isArray(session.checkpoints)) {
+            session.totalCheckpoints = session.checkpoints.length;
+        }
+    });
+    const previousSessions = await Promise.all(
+        user.sessions.map(async({ session, attended }) => {
+            const sessionID = session;
+            const sessionInfo = await Session.findById(sessionID);
+
+            if (!sessionInfo) {
+                return null;
+            }
+
+            const { sessionLocation, sessionDate } = sessionInfo;
+            const formattedDate = sessionDate ? sessionDate.toISOString().split('T')[0] : null;
+            const day = sessionDate ? sessionDate.toLocaleDateString('en-US', { weekday: 'long' }) : null;
+
+            return {
+                location: sessionLocation,
+                date: formattedDate,
+                day: day,
+                attended,
+            };
+        })
+    );
+
+    const filteredPreviousSessions = previousSessions.filter(session => session !== null);
+
+    user.sessions.forEach((session) => {
+        if (session && session.totalCheckpoints) {
+            const sessionsAttended = session.attendedCheckpoints >= session.totalCheckpoints * 0.75;
+            session.attended = sessionsAttended;
+        }
+    });
+    await user.save();
+
+    const totalSessionsAlloted = user.sessions.length;
+    const totalSessionsAttended = user.sessions.filter(({ attended }) => attended).length;
+
+    const attendancePercentage = (totalSessionsAlloted > 0) ?
+        (totalSessionsAttended / totalSessionsAlloted) * 100 :
+        0;
+
+    const data = {
+
+        badgeID: user.badgeID,
+        firstName: user.firstName,
+        surname: user.surname,
+        rank: user.rank,
+        pic: user.profilePic,
+        gender: user.gender,
+        reportsTo: user.reportsTo,
+        attendancePercentage,
+        totalSessionsAttended,
+        totalSessionsAlloted,
+        previousSessions: filteredPreviousSessions,
+
+    };
+    const options = {
+        format: "A4",
+        orientation: "portrait",
+        header: {
+            height: '0mm',
+        },
+
+
+    };
+    const template = handlebars.compile(html, {
+        allowedProtoMethods: {
+            trim: true
+        }
+    });
+    const path = "./Report" + badgeID + ".pdf"
+    const document = {
+        html: html,
+        data: data,
+        path: "./Report" + badgeID + ".pdf"
+    };
+    const result = await pdf.create(document, options);
+    if (!result) {
+        console.error(error);
+    } else {
+        res.status(200).json({ mssg: "Done!" })
+    }
+}
 
 exports.getNearestUser = async(req, res) => {
-    const userLocationArray = [
-        { userID: 3, latitude: 34.0522, longitude: -118.2437 },
-        { userID: 10, latitude: 40.7128, longitude: -74.0060 },
-        { userID: 5, latitude: 51.5074, longitude: -0.1278 },
-        { userID: 6, latitude: 48.8566, longitude: 2.3522 },
-        { userID: 7, latitude: 52.5200, longitude: 13.4050 },
-        { userID: 8, latitude: 37.7749, longitude: -122.4194 },
-        { userID: 9, latitude: 35.6895, longitude: 139.6917 },
-        { userID: 11, latitude: -33.8688, longitude: 151.2093 },
-        { userID: 12, latitude: 25.276987, longitude: 55.296249 },
-        { userID: 13, latitude: -22.9068, longitude: -43.1729 },
-        { userID: 14, latitude: 41.9028, longitude: 12.4964 },
-        { userID: 15, latitude: 19.4326, longitude: -99.1332 },
-        { userID: 16, latitude: -34.6076, longitude: -58.4371 },
-        { userID: 17, latitude: 55.7558, longitude: 37.6176 },
-        { userID: 18, latitude: 37.5665, longitude: 126.9780 },
-        { userID: 19, latitude: 43.6532, longitude: -79.3832 },
-        { userID: 20, latitude: 35.682839, longitude: 139.759455 },
-        { userID: 4, latitude: -33.4489, longitude: -70.6693 }
-    ];
+    // const userLocationArray = [
+    //     { userID: 3, latitude: 34.0522, longitude: -118.2437 },
+    //     { userID: 10, latitude: 40.7128, longitude: -74.0060 },
+    //     { userID: 5, latitude: 51.5074, longitude: -0.1278 },
+    //     { userID: 6, latitude: 48.8566, longitude: 2.3522 },
+    //     { userID: 7, latitude: 52.5200, longitude: 13.4050 },
+    //     { userID: 8, latitude: 37.7749, longitude: -122.4194 },
+    //     { userID: 9, latitude: 35.6895, longitude: 139.6917 },
+    //     { userID: 11, latitude: -33.8688, longitude: 151.2093 },
+    //     { userID: 12, latitude: 25.276987, longitude: 55.296249 },
+    //     { userID: 13, latitude: -22.9068, longitude: -43.1729 },
+    //     { userID: 14, latitude: 41.9028, longitude: 12.4964 },
+    //     { userID: 15, latitude: 19.4326, longitude: -99.1332 },
+    //     { userID: 16, latitude: -34.6076, longitude: -58.4371 },
+    //     { userID: 17, latitude: 55.7558, longitude: 37.6176 },
+    //     { userID: 18, latitude: 37.5665, longitude: 126.9780 },
+    //     { userID: 19, latitude: 43.6532, longitude: -79.3832 },
+    //     { userID: 20, latitude: 35.682839, longitude: 139.759455 },
+    //     { userID: 4, latitude: -33.4489, longitude: -70.6693 }
+    // ];
+    // const { adminId, badgeID } = req.params;
+    // const admin = await Admin.findOne({ adminId: adminId });
+    // if (!admin) {
+    //     return res.status(404).json({ error: 'Admin not found' });
+    // }
+    // const user = await User.findOne({ badgeID });
+    // if (!user) {
+    //     return res.status(404).json({ error: 'User not found' });
+    // }
+
+    // const userEntry = userLocationArray.find(entry => entry.userID === parseInt(badgeID));
+
+
+    // if (!userEntry) {
+    //     return res.status(404).json({ error: 'User not found in location array' });
+    // }
+
+    // const userPosition = { lat: userEntry.latitude, lng: userEntry.longitude };
+
+    // let nearestUserID = null;
+    // let nearestDistance = Infinity;
+    // let ans = [];
+    // for (const entry of userLocationArray) {
+    //     console.log(entry)
+    //     console.log(entry.userID)
+    //     console.log(badgeID)
+    //     if (entry.userID == badgeID)
+    //         continue;
+    //     if (entry.userID !== badgeID) {
+    //         const otherUserPosition = { lat: entry.latitude, lng: entry.longitude };
+    //         const distance = await haversine_distance(userPosition, otherUserPosition);
+    //         // console.log(distance)
+    //         if (distance < nearestDistance) {
+    //             // console.log(distance)
+    //             nearestDistance = distance;
+    //             nearestUserID = entry.userID;
+    //         }
+    //     }
+    // }
+
+    // if (nearestUserID === null) {
+    //     return res.status(404).json({ error: 'Nearest user not found' });
+    // }
+
+    // res.json({ nearestUserID, nearestDistance });
     const { adminId, badgeID } = req.params;
-    const admin = await Admin.findOne({ adminId: adminId });
+    const admin = await Admin.findOne({ adminId });
     if (!admin) {
         return res.status(404).json({ error: 'Admin not found' });
     }
-    const user = await User.findOne({ badgeID });
-    if (!user) {
+    const user1 = await User.findOne({ badgeID });
+    if (!user1) {
         return res.status(404).json({ error: 'User not found' });
     }
 
-    const userEntry = userLocationArray.find(entry => entry.userID === parseInt(badgeID));
-
-    if (!userEntry) {
-        return res.status(404).json({ error: 'User not found in location array' });
-    }
-
-    const userPosition = { lat: userEntry.latitude, lng: userEntry.longitude };
+    const users = await User.find({ reportsTo: adminId });
+    if (!user1.latitude || !user1.longitude)
+        res.status(250).json({ error: "No lat long" });
+    const userPosition = { lat: user1.latitude, lng: user1.longitude };
 
     let nearestUserID = null;
     let nearestDistance = Infinity;
-    let ans = [];
-    for (const entry of userLocationArray) {
-        console.log(entry)
-        console.log(entry.userID)
-        console.log(badgeID)
-        if (entry.userID == badgeID)
-            continue;
-        if (entry.userID !== badgeID) {
-            const otherUserPosition = { lat: entry.latitude, lng: entry.longitude };
+
+    for (const user of users) {
+        if (user.badgeID !== parseInt(badgeID)) {
+            if (!user.latitude || !user.longitude) {
+                continue;
+            }
+            const otherUserPosition = { lat: user.latitude, lng: user.longitude };
             const distance = await haversine_distance(userPosition, otherUserPosition);
-            // console.log(distance)
             if (distance < nearestDistance) {
-                // console.log(distance)
                 nearestDistance = distance;
-                nearestUserID = entry.userID;
+                nearestUserID = user.badgeID;
             }
         }
     }
@@ -907,7 +1058,9 @@ exports.getNearestUser = async(req, res) => {
     }
 
     res.json({ nearestUserID, nearestDistance });
+
 };
+
 
 
 async function haversine_distance(mk1, mk2) {

@@ -835,8 +835,8 @@ exports.startDutyFromNFC = async (req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 };
-
-exports.endDuty = async(req, res) => {
+ 
+exports.endDuty = async (req, res) => {
     try {
         const { badgeId } = req.params;
 
@@ -854,6 +854,11 @@ exports.endDuty = async(req, res) => {
 
         sessionToUpdate.dutyEnded = true;
         sessionToUpdate.dutyEndTime = new Date();
+        sessionToUpdate.attended = true;
+
+        user.totalAttended = (user.totalAttended || 0) + 1;
+
+        user.totalSessions = (user.totalSessions || 0) + 1;
 
         await user.save();
 
@@ -863,6 +868,8 @@ exports.endDuty = async(req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 };
+
+
 
 exports.getSessionInfo = async (req, res) => {
     try {
@@ -881,7 +888,6 @@ exports.getSessionInfo = async (req, res) => {
                 sessionDate: session.sessionDate,
                 startTime: session.startTime,
                 endTime: session.endTime,
-                // ... other session details ...
                 checkpoints: session.checkpoints,
             },
         });

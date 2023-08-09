@@ -11,7 +11,6 @@ const sessionSchema = new Schema({
     type: String,
     required: 'Location cannot be empty',
   },
-
   sessionDate: {
     type: Date,
   },
